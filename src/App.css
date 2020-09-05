@@ -7,6 +7,13 @@
   pointer-events: none;
 }
 
+@font-face {
+  font-family: EHSMB;
+  font-style: normal;
+  font-weight: 400;
+  src: url(fonts/EHSMB.ttf) format('truetype');
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {
     animation: App-logo-spin infinite 20s linear;

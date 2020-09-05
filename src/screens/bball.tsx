@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { Themes } from '../themes/themes';
+import { Score } from '../components/score';
 
 export type BballProps = {
   placeholder?: string;
@@ -26,9 +27,20 @@ export const Bball = (props: any | BballProps) => {
         }
       }}
     >
-      <Text>Bball Scoreboard</Text>
+      <View style={styles.scoresAndClock}>
+        <Score title={'home'} score={0}></Score>
+        <View style={{ flex: 1 }}></View>
+        <Score title={'away'} score={0}></Score>
+      </View>
+      <View style={styles.periodAndBonus}></View>
+      <View style={styles.foulsAndShotClock}></View>
     </View>
   );
+};
+
+const debugBorders = {
+  borderWidth: 1,
+  borderColor: 'red',
 };
 
 const styles = StyleSheet.create({
@@ -37,4 +49,7 @@ const styles = StyleSheet.create({
     width: '100%',
     backgroundColor: Themes.colors.green,
   },
+  scoresAndClock: { flexDirection: 'row', flex: 1, ...debugBorders },
+  periodAndBonus: { flexDirection: 'row', flex: 0.2, ...debugBorders },
+  foulsAndShotClock: { flexDirection: 'row', flex: 1, ...debugBorders },
 });

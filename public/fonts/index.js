@@ -11,4 +11,5 @@ module.exports = {
   SimpleLineIcons: require('./SimpleLineIcons.ttf'),
   Octicons: require('./Octicons.ttf'),
   Zocial: require('./Zocial.ttf'),
+  EHSMB: require('./EHSMB.ttf'),
 };
