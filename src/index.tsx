@@ -7,8 +7,6 @@ import { Router } from 'react-router-dom';
 import Routes from './routes/routes';
 import WebNavigator from './web/web_navigator';
 
-import { Provider } from 'react-redux';
-
 const history = createBrowserHistory();
 const navigation = WebNavigator.getInst();
 navigation.setHistory(history);
