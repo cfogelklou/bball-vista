@@ -3,12 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@types/react-router-dom": "^5.1.5",
     "deep-equal": "^2.0.3",
     "firebase": "^7.14.3",
     "history": "^4.10.1",
     "react": "^16.13.1",
     "react-animations": "^1.0.0",
-    "react-avatar": "^3.9.6",
     "react-device-detect": "^1.12.1",
     "react-dom": "^16.13.1",
     "react-emoji-render": "^1.2.4",
