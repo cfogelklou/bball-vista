@@ -1,0 +1,11 @@
+{
+  "javascript.validate.enable": true,
+  "less.validate": true,
+  "typescript.check.npmIsInstalled": true,
+  "typescript.validate.enable": true,
+  "editor.tabSize": 2,
+  "editor.detectIndentation": false,
+  "cSpell.enabled": false,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true
+}
