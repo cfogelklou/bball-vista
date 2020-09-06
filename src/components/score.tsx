@@ -16,11 +16,6 @@ export type ScoreProps = {
   onLongPressLeft?: () => void;
 };
 
-type ScoreDimensions = {
-  myWidth: number;
-  myHeight: number;
-};
-
 export const _Score = (props: ScoreProps) => {
   const score = props.score ? props.score : 0;
   const title = props.title ? props.title.toUpperCase() : '';

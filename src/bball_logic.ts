@@ -5,28 +5,22 @@ let singleton: null | BballLogic = null;
 class BballTeam {
   fouls: number = 0;
   points: number = 0;
+
   isBonus() {
     return this.fouls >= 5;
   }
-  incFouls() {
-    this.fouls = this.fouls >= 5 ? 5 : 1 + this.fouls;
-    return this.fouls;
-  }
-  decFouls() {
-    this.fouls = this.fouls <= 0 ? 0 : this.fouls - 1;
+
+  addFouls(fouls: number) {
+    this.fouls += fouls;
+    this.fouls = Math.max(0, this.fouls);
+    this.fouls = Math.min(5, this.fouls);
     return this.fouls;
   }
 
-  incPoints() {
-    return ++this.points;
-  }
-  decPoints() {
-    this.points = this.points <= 0 ? 0 : this.points - 1;
-    return this.points;
-  }
   addPoints(points: number) {
     this.points += points;
     this.points = Math.max(0, this.points);
+    return this.points;
   }
 
   newPeriod() {

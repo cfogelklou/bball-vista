@@ -33,6 +33,10 @@ export type ScoreboardProps = {
   onHomeScoreLongPress?: (rightSide: boolean) => void;
   onAwayScorePress?: (rightSide: boolean) => void;
   onAwayScoreLongPress?: (rightSide: boolean) => void;
+  onHomeFoulsPress?: (rightSide: boolean) => void;
+  onHomeFoulsLongPress?: (rightSide: boolean) => void;
+  onAwayFoulsPress?: (rightSide: boolean) => void;
+  onAwayFoulsLongPress?: (rightSide: boolean) => void;
 };
 
 const GOLDEN_RATIO = 1600 / 900; // Golden ratio
@@ -111,20 +115,68 @@ export const Scoreboard = (props: ScoreboardProps) => {
           </View>
         </View>
         <View style={styles.scoreAndBonus}>
-          <Score title={'away'} score={gameState.awayPoints} color='green'></Score>
+          <Score
+            title={'away'}
+            score={gameState.awayPoints}
+            color='green'
+            onPressRight={() => {
+              handleOnPress(true, props.onAwayScorePress);
+            }}
+            onPressLeft={() => {
+              handleOnPress(false, props.onAwayScorePress);
+            }}
+            onLongPressRight={() => {
+              handleOnPress(true, props.onAwayScoreLongPress);
+            }}
+            onLongPressLeft={() => {
+              handleOnPress(false, props.onAwayScoreLongPress);
+            }}
+          ></Score>
         </View>
       </View>
       <View style={styles.spacer}></View>
 
       <View style={styles.foulsAndShotClock}>
         <View style={styles.foulsAndShotClockRow}>
-          <Score title={'fouls'} score={gameState.homeFouls} color='yellow'></Score>
+          <Score
+            title={'fouls'}
+            score={gameState.homeFouls}
+            color='yellow'
+            onPressRight={() => {
+              handleOnPress(true, props.onHomeFoulsPress);
+            }}
+            onPressLeft={() => {
+              handleOnPress(false, props.onHomeFoulsPress);
+            }}
+            onLongPressRight={() => {
+              handleOnPress(true, props.onHomeFoulsLongPress);
+            }}
+            onLongPressLeft={() => {
+              handleOnPress(false, props.onHomeFoulsLongPress);
+            }}
+          ></Score>
         </View>
         <View style={styles.foulsAndShotClockRow}>
           <Score title={'shot'} score={gameState.shotClock} color='red'></Score>
         </View>
         <View style={styles.foulsAndShotClockRow}>
-          <Score title={'fouls'} score={gameState.awayFouls} color='yellow'></Score>
+          <Score
+            title={'fouls'}
+            score={gameState.awayFouls}
+            color='yellow'
+            onPressRight={() => {
+              handleOnPress(true, props.onAwayFoulsPress);
+            }}
+            onPressLeft={() => {
+              handleOnPress(false, props.onAwayFoulsPress);
+            }}
+            onLongPressRight={() => {
+              handleOnPress(true, props.onAwayFoulsLongPress);
+            }}
+            onLongPressLeft={() => {
+              handleOnPress(false, props.onAwayFoulsLongPress);
+            }}
+          ></Score>
         </View>
       </View>
     </View>

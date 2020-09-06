@@ -23,6 +23,21 @@ export const Bball = (props: any | BballProps) => {
           BballLogic.getInst().game.homeTeam.addPoints(addPoints);
           setGameState(BballLogic.getInst().getState());
         }}
+        onAwayScorePress={(rightSide) => {
+          const addPoints = rightSide ? 1 : -1;
+          BballLogic.getInst().game.awayTeam.addPoints(addPoints);
+          setGameState(BballLogic.getInst().getState());
+        }}
+        onHomeFoulsPress={(rightSide) => {
+          const num = rightSide ? 1 : -1;
+          BballLogic.getInst().game.homeTeam.addFouls(num);
+          setGameState(BballLogic.getInst().getState());
+        }}
+        onAwayFoulsPress={(rightSide) => {
+          const num = rightSide ? 1 : -1;
+          BballLogic.getInst().game.awayTeam.addFouls(num);
+          setGameState(BballLogic.getInst().getState());
+        }}
       />
     </View>
   );
