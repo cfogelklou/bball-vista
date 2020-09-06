@@ -1,18 +1,18 @@
 @font-face {
-  font-family: 'EHSMB';
+  font-family: 'ehsmb';
   font-style: normal;
   font-weight: 400;
-  src: url(src/fonts/EHSMB.ttf) format('truetype');
+  src: url(src/fonts/ehsmb.ttf) format('truetype');
 }
 
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu',
-    'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif, 'EHSMB';
+    'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif, 'ehsmb';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace, 'EHSMB';
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace, 'ehsmb';
 }

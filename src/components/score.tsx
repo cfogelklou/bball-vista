@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
   },
   score: {
     alignSelf: 'center',
-    fontFamily: 'EHSMB',
+    fontFamily: 'ehsmb',
 
     color: 'green',
   },
