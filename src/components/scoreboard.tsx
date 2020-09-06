@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 import { Themes } from '../themes/themes';
 import { Score } from '../components/score';
+import { Clock } from '../components/clock';
 
 export type ScoreboardProps = {
   width: number;
@@ -14,16 +15,20 @@ export type ScoreboardProps = {
   clock?: number;
   shotClock?: number;
   period?: number;
+  onHomeScorePress?: (rightSide: boolean) => void;
+  onHomeScoreLongPress?: (rightSide: boolean) => void;
+  onAwayScorePress?: (rightSide: boolean) => void;
+  onAwayScoreLongPress?: (rightSide: boolean) => void;
 };
 
-const GOLDEN_RATIO = 1.414; // Golden ratio
+const GOLDEN_RATIO = 1600 / 900; // Golden ratio
 
 export const Scoreboard = (props: ScoreboardProps) => {
   const [width, setWidth] = useState(1.0);
   const [height, setHeight] = useState(1.0);
   const [scoreboardWidth, setScoreboardWidth] = useState(1.0);
   const [scoreboardHeight, setScoreboardHeight] = useState(1.0);
-  const clock = props.clock ? props.clock : 10.0;
+  const clock = props.clock ? props.clock : 10;
 
   const windowResized = (width: number, height: number) => {
     let w = height * GOLDEN_RATIO;
@@ -49,20 +54,21 @@ export const Scoreboard = (props: ScoreboardProps) => {
     <View style={{ width: scoreboardWidth, height: scoreboardHeight }}>
       <View style={styles.scoresAndClock}>
         <View style={styles.scoreAndBonus}>
-          <Score title={'home'} score={999} color='green'></Score>
+          <Score title={'home'} score={0} color='green'></Score>
         </View>
         <View style={{ flex: GOLDEN_RATIO }}>
-          <View style={{ flex: GOLDEN_RATIO }}>
-            <Text style={{ color: 'white' }}>{clock}</Text>
+          <View style={{ flex: 2 }}>
+            <Clock clock={clock} color={'red'}></Clock>
           </View>
           <View style={{ flex: 1 }}>
-            <Score title={'period'} score={0} color='red'></Score>
+            <Score title={'period'} score={0} color='red' isHorizontal={true}></Score>
           </View>
         </View>
         <View style={styles.scoreAndBonus}>
           <Score title={'away'} score={0} color='green'></Score>
         </View>
       </View>
+      <View style={styles.spacer}></View>
 
       <View style={styles.foulsAndShotClock}>
         <View style={styles.foulsAndShotClockRow}>
@@ -80,14 +86,15 @@ export const Scoreboard = (props: ScoreboardProps) => {
 };
 
 const debugBorders = {
-  borderWidth: 1,
-  borderColor: 'red',
+  //borderWidth: 1,
+  //borderColor: 'red',
 };
 const styles = StyleSheet.create({
   container: {
     backgroundColor: Themes.colors.almost_black,
   },
   scoresAndClock: { flexDirection: 'row', flex: 1.4, ...debugBorders },
+  spacer: { flex: 0.2, borderTopWidth: 1, borderTopColor: 'white' },
   scoreAndBonus: { flex: 1, ...debugBorders },
   foulsAndShotClock: {
     flexDirection: 'row',

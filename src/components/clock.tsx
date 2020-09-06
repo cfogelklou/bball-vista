@@ -1,32 +1,51 @@
-import React, { useState, memo } from 'react';
+import React, { useState } from 'react';
 
 import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { Themes } from '../themes/themes';
 
-export type ScoreProps = {
-  title?: string;
-  numDigits?: number;
+export type ClockProps = {
   containerStyle?: any;
-  score: number;
+  clock: number;
   color?: string;
-  isHorizontal?: boolean;
   onPressRight?: () => void;
   onPressLeft?: () => void;
   onLongPressRight?: () => void;
   onLongPressLeft?: () => void;
 };
 
-type ScoreDimensions = {
+type ClockDimensions = {
   myWidth: number;
   myHeight: number;
 };
 
-export const Score = (props: ScoreProps) => {
-  const score = props.score ? props.score : 0;
-  const title = props.title ? props.title.toUpperCase() : '';
+function clockToString(c: number, showTensAlways: boolean = false) {
+  let d = c;
+  let tens = 0;
+  let ones = 0;
+  if (showTensAlways) {
+    tens = Math.floor(d / 10) % 10;
+    d = d - tens * 10;
+    ones = Math.floor(d / 1) % 10;
+  } else {
+    ones = Math.floor(d / 1);
+  }
+  d = d - ones * 1;
+  const tenths = Math.floor(d * 10) % 10;
+  d = d - tenths / 10;
+  const hundredths = Math.floor(d * 100) % 10;
+  d = d - hundredths / 100;
+  if (showTensAlways) {
+    return tens.toString() + ones.toString() + ':' + tenths.toString() + hundredths.toString();
+  } else {
+    return ones.toString() + ':' + tenths.toString() + hundredths.toString();
+  }
+}
+
+export const Clock = (props: ClockProps) => {
+  // xx.xx
+  const clock = props.clock ? props.clock : 0;
   const color = props.color ? props.color : 'green';
 
-  const [titleSize, setTitleSize] = useState(1);
   const [fontSize, setFontSize] = useState(1);
   const [width, setWidth] = useState(1);
   const [height, setHeight] = useState(1);
@@ -46,16 +65,12 @@ export const Score = (props: ScoreProps) => {
     }
   };
 
-  const calculateSizes = (width: number, height: number, isHorizontal?: boolean) => {
-    const multiply = isHorizontal ? 2 : 1;
-    setTitleSize(height * 0.15 * multiply);
-    setFontSize(height * 0.4 * multiply);
+  const calculateSizes = (width: number, height: number) => {
+    setFontSize(height * 0.5);
     setWidth(width);
     setHeight(height);
-    setMargin(height * 0.05 * multiply);
+    setMargin(height * 0.05);
   };
-
-  const titleAndScore = props.isHorizontal ? styles.titleAndScoreHoriz : styles.titleAndScore;
 
   return (
     <>
@@ -63,14 +78,15 @@ export const Score = (props: ScoreProps) => {
         style={[styles.container, { ...props.containerStyle }]}
         onLayout={(event) => {
           const { width, height } = event.nativeEvent.layout;
-          console.log('Score got layout:', event.nativeEvent.layout);
-          calculateSizes(width, height, props.isHorizontal);
+          console.log('Clock got layout:', event.nativeEvent.layout);
+          calculateSizes(width, height);
         }}
       >
-        <View style={titleAndScore}>
-          <Text style={[styles.title, { fontSize: titleSize }]}>{title}</Text>
-          <View style={[styles.scoreView, { margin: margin }]}>
-            <Text style={[styles.score, { fontSize: fontSize, color: color }]}>{score}</Text>
+        <View style={styles.black}>
+          <View style={[styles.clockView, { margin: margin }]}>
+            <Text style={[styles.clock, { fontSize: fontSize, color: color }]}>
+              {clockToString(clock)}
+            </Text>
           </View>
         </View>
       </View>
@@ -108,18 +124,11 @@ export const Score = (props: ScoreProps) => {
   );
 };
 
-export const __Score = memo(Score);
-
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  titleAndScore: {
+  black: {
     backgroundColor: Themes.colors.almost_black,
     alignSelf: 'stretch',
-  },
-  titleAndScoreHoriz: {
-    backgroundColor: Themes.colors.almost_black,
-    flexDirection: 'row',
-    alignSelf: 'center',
   },
   title: {
     fontFamily: 'monotype',
@@ -127,11 +136,13 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     color: 'white',
   },
-  scoreView: {
+  clockView: {
     alignSelf: 'stretch',
     backgroundColor: Themes.colors.black,
+    borderWidth: 1,
+    borderColor: 'white',
   },
-  score: {
+  clock: {
     alignSelf: 'center',
     fontFamily: 'ehsmb',
   },
