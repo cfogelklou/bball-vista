@@ -52,7 +52,7 @@ export const Scoreboard = (props: ScoreboardProps) => {
           <Score title={'home'} score={999} color='green'></Score>
         </View>
         <View style={{ flex: GOLDEN_RATIO }}>
-          <View style={{ flex: 2 }}>
+          <View style={{ flex: GOLDEN_RATIO }}>
             <Text style={{ color: 'white' }}>{clock}</Text>
           </View>
           <View style={{ flex: 1 }}>

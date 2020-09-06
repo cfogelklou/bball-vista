@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+
 import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { Themes } from '../themes/themes';
 
@@ -28,12 +29,14 @@ export const Score = (props: ScoreProps) => {
   const [fontSize, setFontSize] = useState(1);
   const [width, setWidth] = useState(1);
   const [height, setHeight] = useState(1);
+  const [margin, setMargin] = useState(1);
 
   const calculateSizes = (width: number, height: number) => {
     setTitleSize(height * 0.15);
     setFontSize(height * 0.4);
     setWidth(width);
     setHeight(height);
+    setMargin(height * 0.05);
   };
 
   return (
@@ -48,7 +51,7 @@ export const Score = (props: ScoreProps) => {
       >
         <View style={styles.black}>
           <Text style={[styles.title, { fontSize: titleSize }]}>{title}</Text>
-          <View style={styles.scoreView}>
+          <View style={[styles.scoreView, { margin: margin }]}>
             <Text style={[styles.score, { fontSize: fontSize, color: color }]}>{score}</Text>
           </View>
         </View>
