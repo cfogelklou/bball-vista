@@ -3,18 +3,32 @@ import { View, StyleSheet, Text } from 'react-native';
 import { Themes } from '../themes/themes';
 import { Score } from '../components/score';
 import { Clock } from '../components/clock';
+import deepEqual from 'deep-equal';
+
+export type BballGameState = {
+  homePoints: number;
+  awayPoints: number;
+  homeFouls: number;
+  awayFouls: number;
+  clock: number;
+  shotClock: number;
+  period: number;
+};
+
+export const defaultGameState: BballGameState = {
+  homePoints: 0,
+  awayPoints: 0,
+  homeFouls: 0,
+  awayFouls: 0,
+  clock: 10,
+  shotClock: 24,
+  period: 0,
+};
 
 export type ScoreboardProps = {
   width: number;
   height: number;
-  homeScore?: number;
-  awayScore?: number;
-  homeFouls?: number;
-  awayFouls?: number;
-  possessionHome?: boolean;
-  clock?: number;
-  shotClock?: number;
-  period?: number;
+  gameState: BballGameState;
   onHomeScorePress?: (rightSide: boolean) => void;
   onHomeScoreLongPress?: (rightSide: boolean) => void;
   onAwayScorePress?: (rightSide: boolean) => void;
@@ -28,7 +42,12 @@ export const Scoreboard = (props: ScoreboardProps) => {
   const [height, setHeight] = useState(1.0);
   const [scoreboardWidth, setScoreboardWidth] = useState(1.0);
   const [scoreboardHeight, setScoreboardHeight] = useState(1.0);
-  const clock = props.clock ? props.clock : 10;
+  const [gameState, setGameState] = useState<BballGameState>(defaultGameState);
+
+  //if (gameState != props.gameState) {
+  if (!deepEqual(gameState, props.gameState)) {
+    setGameState({ ...props.gameState });
+  }
 
   const windowResized = (width: number, height: number) => {
     let w = height * GOLDEN_RATIO;
@@ -50,35 +69,62 @@ export const Scoreboard = (props: ScoreboardProps) => {
     windowResized(props.width, props.height);
   }
 
+  function handleOnPress(rightSide: boolean, fn?: (rightSide: boolean) => void) {
+    if (fn) {
+      fn(rightSide);
+    }
+  }
+
   return (
     <View style={{ width: scoreboardWidth, height: scoreboardHeight }}>
       <View style={styles.scoresAndClock}>
         <View style={styles.scoreAndBonus}>
-          <Score title={'home'} score={0} color='green'></Score>
+          <Score
+            title={'home'}
+            score={gameState.homePoints}
+            color='green'
+            onPressRight={() => {
+              handleOnPress(true, props.onHomeScorePress);
+            }}
+            onPressLeft={() => {
+              handleOnPress(false, props.onHomeScorePress);
+            }}
+            onLongPressRight={() => {
+              handleOnPress(true, props.onHomeScoreLongPress);
+            }}
+            onLongPressLeft={() => {
+              handleOnPress(false, props.onHomeScoreLongPress);
+            }}
+          ></Score>
         </View>
         <View style={{ flex: GOLDEN_RATIO }}>
           <View style={{ flex: 2 }}>
-            <Clock clock={clock} color={'red'}></Clock>
+            <Clock clock={gameState.clock} color={'red'}></Clock>
           </View>
           <View style={{ flex: 1 }}>
-            <Score title={'period'} score={0} color='red' isHorizontal={true}></Score>
+            <Score
+              title={'period'}
+              score={gameState.period}
+              color='red'
+              isHorizontal={true}
+            ></Score>
           </View>
         </View>
         <View style={styles.scoreAndBonus}>
-          <Score title={'away'} score={0} color='green'></Score>
+          <Score title={'away'} score={gameState.awayPoints} color='green'></Score>
         </View>
       </View>
       <View style={styles.spacer}></View>
 
       <View style={styles.foulsAndShotClock}>
         <View style={styles.foulsAndShotClockRow}>
-          <Score title={'fouls'} score={0} color='yellow'></Score>
+          <Score title={'fouls'} score={gameState.homeFouls} color='yellow'></Score>
         </View>
         <View style={styles.foulsAndShotClockRow}>
-          <Score title={'shot'} score={24} color='red'></Score>
+          <Score title={'shot'} score={gameState.shotClock} color='red'></Score>
         </View>
         <View style={styles.foulsAndShotClockRow}>
-          <Score title={'fouls'} score={0} color='yellow'></Score>
+          <Score title={'fouls'} score={gameState.awayFouls} color='yellow'></Score>
         </View>
       </View>
     </View>

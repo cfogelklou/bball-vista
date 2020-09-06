@@ -21,7 +21,7 @@ type ScoreDimensions = {
   myHeight: number;
 };
 
-export const Score = (props: ScoreProps) => {
+export const _Score = (props: ScoreProps) => {
   const score = props.score ? props.score : 0;
   const title = props.title ? props.title.toUpperCase() : '';
   const color = props.color ? props.color : 'green';
@@ -32,14 +32,14 @@ export const Score = (props: ScoreProps) => {
   const [height, setHeight] = useState(1);
   const [margin, setMargin] = useState(1);
 
-  const onPress = (isLeft: boolean) => {
+  const handleOnPress = (isLeft: boolean) => {
     const cb = isLeft ? props.onPressLeft : props.onPressRight;
     if (cb) {
       cb();
     }
   };
 
-  const onLongPress = (isLeft: boolean) => {
+  const handleOnLongPress = (isLeft: boolean) => {
     const cb = isLeft ? props.onLongPressLeft : props.onLongPressRight;
     if (cb) {
       cb();
@@ -76,10 +76,10 @@ export const Score = (props: ScoreProps) => {
       </View>
       <TouchableOpacity
         onPress={() => {
-          onPress(false);
+          handleOnPress(true);
         }}
         onLongPress={() => {
-          onLongPress(false);
+          handleOnLongPress(true);
         }}
         style={{
           position: 'absolute',
@@ -91,10 +91,10 @@ export const Score = (props: ScoreProps) => {
       ></TouchableOpacity>
       <TouchableOpacity
         onPress={() => {
-          onPress(true);
+          handleOnPress(false);
         }}
         onLongPress={() => {
-          onLongPress(true);
+          handleOnLongPress(false);
         }}
         style={{
           position: 'absolute',
@@ -108,7 +108,7 @@ export const Score = (props: ScoreProps) => {
   );
 };
 
-export const __Score = memo(Score);
+export const Score = memo(_Score);
 
 const styles = StyleSheet.create({
   container: { flex: 1 },

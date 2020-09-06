@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { Themes } from '../themes/themes';
 import { Scoreboard } from '../components/scoreboard';
+import { BballLogic } from '../bball_logic';
 
 export type BballProps = {
   placeholder?: string;
@@ -9,10 +10,20 @@ export type BballProps = {
 
 export const Bball = (props: any | BballProps) => {
   const dim = Dimensions.get('window');
+  const [gameState, setGameState] = useState(BballLogic.getInst().getState());
 
   return (
     <View style={[styles.container, { width: dim.width, height: dim.height }]}>
-      <Scoreboard width={dim.width} height={dim.height} />
+      <Scoreboard
+        width={dim.width}
+        height={dim.height}
+        gameState={gameState}
+        onHomeScorePress={(rightSide) => {
+          const addPoints = rightSide ? 1 : -1;
+          BballLogic.getInst().game.homeTeam.addPoints(addPoints);
+          setGameState(BballLogic.getInst().getState());
+        }}
+      />
     </View>
   );
 };
