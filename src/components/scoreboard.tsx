@@ -18,6 +18,8 @@ export type ScoreboardProps = {
   onHomeFoulsLongPress?: (rightSide: boolean) => void;
   onAwayFoulsPress?: (rightSide: boolean) => void;
   onAwayFoulsLongPress?: (rightSide: boolean) => void;
+  onPeriodPress?: (rightSide: boolean) => void;
+  onPeriodLongPress?: (rightSide: boolean) => void;
 };
 
 const GOLDEN_RATIO = 1600 / 900; // Golden ratio
@@ -92,6 +94,18 @@ export const Scoreboard = (props: ScoreboardProps) => {
               score={gameState.period}
               color='red'
               isHorizontal={true}
+              onPressRight={() => {
+                handleOnPress(true, props.onPeriodPress);
+              }}
+              onPressLeft={() => {
+                handleOnPress(false, props.onPeriodPress);
+              }}
+              onLongPressRight={() => {
+                handleOnPress(true, props.onPeriodLongPress);
+              }}
+              onLongPressLeft={() => {
+                handleOnPress(false, props.onPeriodLongPress);
+              }}
             ></Score>
           </View>
         </View>

@@ -48,6 +48,15 @@ class BballGame {
   shotClock: number = 24;
   clockRunning: boolean = false;
 
+  addPeriod(num: number) {
+    this.period += num;
+    this.period = Math.max(1, this.period);
+    this.period = Math.min(4, this.period);
+
+    BballLogic.getInst()._setDirty();
+    return this.period;
+  }
+
   constructor(minutesPerPeriod: number) {
     this.minutesPerPeriod = minutesPerPeriod;
   }

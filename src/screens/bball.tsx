@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { Themes } from '../themes/themes';
 import { Scoreboard } from '../components/scoreboard';
 import { BballLogic, BballGameState } from '../bball_logic';
+import deepEqual from 'deep-equal';
 
 export type BballProps = {
   placeholder?: string;
@@ -17,6 +18,12 @@ export const Bball = (props: any | BballProps) => {
     }).getState(),
   );
 
+  function setGameStateIfChanged(newState: BballGameState) {
+    if (!deepEqual(gameState, newState)) {
+      setGameState(newState);
+    }
+  }
+
   return (
     <View style={[styles.container, { width: dim.width, height: dim.height }]}>
       <Scoreboard
@@ -26,22 +33,27 @@ export const Bball = (props: any | BballProps) => {
         onHomeScorePress={(rightSide) => {
           const addPoints = rightSide ? 1 : -1;
           BballLogic.getInst().game.homeTeam.addPoints(addPoints);
-          setGameState(BballLogic.getInst().getState());
+          setGameStateIfChanged(BballLogic.getInst().getState());
         }}
         onAwayScorePress={(rightSide) => {
           const addPoints = rightSide ? 1 : -1;
           BballLogic.getInst().game.awayTeam.addPoints(addPoints);
-          setGameState(BballLogic.getInst().getState());
+          setGameStateIfChanged(BballLogic.getInst().getState());
         }}
         onHomeFoulsPress={(rightSide) => {
           const num = rightSide ? 1 : -1;
           BballLogic.getInst().game.homeTeam.addFouls(num);
-          setGameState(BballLogic.getInst().getState());
+          setGameStateIfChanged(BballLogic.getInst().getState());
         }}
         onAwayFoulsPress={(rightSide) => {
           const num = rightSide ? 1 : -1;
           BballLogic.getInst().game.awayTeam.addFouls(num);
-          setGameState(BballLogic.getInst().getState());
+          setGameStateIfChanged(BballLogic.getInst().getState());
+        }}
+        onPeriodPress={(rightSide) => {
+          const num = rightSide ? 1 : -1;
+          BballLogic.getInst().game.addPeriod(num);
+          setGameStateIfChanged(BballLogic.getInst().getState());
         }}
       />
     </View>
