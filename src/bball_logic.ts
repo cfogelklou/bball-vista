@@ -43,7 +43,7 @@ class BballGame {
   minutesPerPeriod = 0;
   homeTeam: BballTeam = new BballTeam();
   awayTeam: BballTeam = new BballTeam();
-  period: number = 4;
+  period: number = 0;
   clock: number = 10;
   shotClock: number = 24;
   clockRunning: boolean = false;

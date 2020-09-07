@@ -27,19 +27,11 @@ export const _Score = (props: ScoreProps) => {
   const [height, setHeight] = useState(1);
   const [margin, setMargin] = useState(1);
 
-  const handleOnPress = (isLeft: boolean) => {
-    const cb = isLeft ? props.onPressLeft : props.onPressRight;
+  function handleOnPress(cb?: () => void) {
     if (cb) {
       cb();
     }
-  };
-
-  const handleOnLongPress = (isLeft: boolean) => {
-    const cb = isLeft ? props.onLongPressLeft : props.onLongPressRight;
-    if (cb) {
-      cb();
-    }
-  };
+  }
 
   const calculateSizes = (width: number, height: number, isHorizontal?: boolean) => {
     const multiply = isHorizontal ? 2 : 1;
@@ -71,10 +63,11 @@ export const _Score = (props: ScoreProps) => {
       </View>
       <TouchableOpacity
         onPress={() => {
-          handleOnPress(true);
+          console.log('onPressLeft');
+          handleOnPress(props.onPressLeft);
         }}
         onLongPress={() => {
-          handleOnLongPress(true);
+          handleOnPress(props.onLongPressLeft);
         }}
         style={{
           position: 'absolute',
@@ -86,10 +79,11 @@ export const _Score = (props: ScoreProps) => {
       ></TouchableOpacity>
       <TouchableOpacity
         onPress={() => {
-          handleOnPress(false);
+          console.log('onPressRight');
+          handleOnPress(props.onPressRight);
         }}
         onLongPress={() => {
-          handleOnLongPress(false);
+          handleOnPress(props.onLongPressRight);
         }}
         style={{
           position: 'absolute',
