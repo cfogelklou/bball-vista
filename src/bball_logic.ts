@@ -3,6 +3,28 @@ import deepEqual from 'deep-equal';
 
 let singleton: null | BballLogic = null;
 
+function getMs(): number {
+  return Date.now();
+}
+
+export function getClockString(_ms: number): string {
+  let ms = _ms;
+  const minutes = Math.floor(ms / (60 * 1000));
+  ms = ms - minutes * 60 * 1000;
+  const seconds = Math.floor(ms / 1000);
+  const seconds_1 = Math.floor(seconds / 10);
+  const seconds_0 = seconds - 10 * seconds_1;
+  return minutes.toString() + ':' + seconds_1.toString() + seconds_0.toString();
+}
+
+export function getShotClockString(_ms: number): string {
+  let ms = _ms;
+  const seconds = Math.floor(ms / 1000);
+  const seconds_1 = Math.floor(seconds / 10);
+  const seconds_0 = seconds - 10 * seconds_1;
+  return seconds_1.toString() + seconds_0.toString();
+}
+
 class BballTeam {
   fouls: number = 0;
   points: number = 0;
@@ -40,13 +62,17 @@ class BballTeam {
 }
 
 class BballGame {
-  minutesPerPeriod = 0;
+  minutesPerPeriod = 10;
   homeTeam: BballTeam = new BballTeam();
   awayTeam: BballTeam = new BballTeam();
-  period: number = 0;
-  clock: number = 10;
-  shotClock: number = 24;
-  clockRunning: boolean = false;
+  period: number = 1;
+  clockMs: number = this.minutesPerPeriod * 60 * 1000;
+  shotClockMs: number = 24 * 1000;
+  clockStartTime: number = 0;
+
+  constructor(minutesPerPeriod: number) {
+    this.minutesPerPeriod = minutesPerPeriod;
+  }
 
   addPeriod(num: number) {
     this.period += num;
@@ -57,8 +83,34 @@ class BballGame {
     return this.period;
   }
 
-  constructor(minutesPerPeriod: number) {
-    this.minutesPerPeriod = minutesPerPeriod;
+  updateClock() {
+    const ms = getMs();
+    if (0 !== this.clockStartTime) {
+      const timePassed = ms - this.clockStartTime;
+      this.clockStartTime = ms;
+      this.clockMs -= timePassed;
+      this.clockMs = Math.max(0, this.clockMs);
+      this.shotClockMs -= timePassed;
+      this.shotClockMs = Math.max(0, this.shotClockMs);
+    }
+    return ms;
+  }
+
+  toggleClock() {
+    const ms = this.updateClock();
+    if (0 !== this.clockStartTime) {
+      this.clockStartTime = 0;
+    } else {
+      this.clockStartTime = ms;
+    }
+  }
+
+  getClock(): string {
+    return getClockString(this.clockMs);
+  }
+
+  getShotClock(): string {
+    return getShotClockString(this.shotClockMs);
   }
 }
 
@@ -67,8 +119,8 @@ export type BballGameState = {
   awayPoints: number;
   homeFouls: number;
   awayFouls: number;
-  clock: number;
-  shotClock: number;
+  clockMs: number;
+  shotClockMs: number;
   period: number;
 };
 
@@ -77,8 +129,8 @@ export const defaultGameState: BballGameState = {
   awayPoints: 0,
   homeFouls: 0,
   awayFouls: 0,
-  clock: 10,
-  shotClock: 24,
+  clockMs: 10 * 60 * 1000,
+  shotClockMs: 24 * 1000,
   period: 0,
 };
 
@@ -89,7 +141,7 @@ export class BballLogic {
   game: BballGame;
 
   minutesPerPeriod = 10;
-  currState: BballGameState = defaultGameState;
+  currState: BballGameState = { ...defaultGameState };
   isDirty: boolean = false;
 
   // Get singleton
@@ -108,21 +160,37 @@ export class BballLogic {
 
   // Create a new game
   newGame() {
+    console.log('Creating new game.');
     this.game = new BballGame(this.minutesPerPeriod);
-    if (singleton) {
-      BballLogic.getInst()._setDirty();
+    this.currState = { ...defaultGameState };
+    this._setDirty();
+  }
+
+  getClock(): string {
+    return this.game.getClock();
+  }
+
+  getShotClock(): string {
+    return this.game.getShotClock();
+  }
+
+  toggleClock(): void {
+    this.game.toggleClock();
+    if (0 === this.game.clockStartTime) {
+      this._setDirty();
     }
   }
 
   // Gets the current state.
   getState(): BballGameState {
+    this.game.updateClock();
     const gameState: BballGameState = {
       homePoints: this.game.homeTeam.points,
       awayPoints: this.game.awayTeam.points,
       homeFouls: this.game.homeTeam.fouls,
       awayFouls: this.game.awayTeam.fouls,
-      clock: this.game.clock,
-      shotClock: this.game.shotClock,
+      clockMs: this.game.clockMs,
+      shotClockMs: this.game.shotClockMs,
       period: this.game.period,
     };
     return gameState;
@@ -136,9 +204,7 @@ export class BballLogic {
     }
     const jsonValue = JSON.stringify(this.currState);
     AsyncStorage.setItem(SAVE_ID, jsonValue)
-      .then(() => {
-        console.log('Saved current game state:', this.currState);
-      })
+      .then(() => {})
       .catch((e) => {
         console.log('Failed to save current game state:', e);
       });
@@ -153,8 +219,8 @@ export class BballLogic {
           this.game.awayTeam.points = s.awayPoints;
           this.game.homeTeam.fouls = s.homeFouls;
           this.game.awayTeam.fouls = s.awayFouls;
-          this.game.clock = s.clock;
-          this.game.shotClock = s.shotClock;
+          this.game.clockMs = s.clockMs;
+          this.game.shotClockMs = s.shotClockMs;
           this.game.period = s.period;
           this.isDirty = false;
           this.currState = s;
@@ -172,8 +238,25 @@ export class BballLogic {
   };
 
   // Set dirty flag and save the current game state.
-  _setDirty = async () => {
+  _setDirty = () => {
     this.isDirty = true;
     this._saveState();
   };
+
+  resetClock() {
+    this.game.clockMs = this.minutesPerPeriod * 60 * 1000;
+    this._setDirty();
+  }
+
+  resetShotClock(seconds: number) {
+    this.game.shotClockMs = seconds * 1000;
+    this.game.shotClockMs = Math.min(24000, this.game.shotClockMs);
+    this.game.shotClockMs = Math.max(0, this.game.shotClockMs);
+    console.log('shotClocks:', seconds);
+    this._setDirty();
+  }
+
+  isClockRunning() {
+    return this.game.clockStartTime !== 0;
+  }
 }

@@ -4,7 +4,12 @@ import { Themes } from '../themes/themes';
 import { Score } from '../components/score';
 import { Clock } from '../components/clock';
 import deepEqual from 'deep-equal';
-import { BballGameState, defaultGameState } from '../bball_logic';
+import {
+  BballGameState,
+  defaultGameState,
+  getClockString,
+  getShotClockString,
+} from '../bball_logic';
 
 export type ScoreboardProps = {
   width: number;
@@ -20,6 +25,12 @@ export type ScoreboardProps = {
   onAwayFoulsLongPress?: (rightSide: boolean) => void;
   onPeriodPress?: (rightSide: boolean) => void;
   onPeriodLongPress?: (rightSide: boolean) => void;
+  onClockPress?: (rightSide: boolean) => void;
+  onClockLongPress?: (rightSide: boolean) => void;
+  onShotClockPress?: (rightSide: boolean) => void;
+  onShotClockLongPress?: (rightSide: boolean) => void;
+  onShotClockPressIn?: (rightSide: boolean) => void;
+  onShotClockPressOut?: (rightSide: boolean) => void;
 };
 
 const GOLDEN_RATIO = 1600 / 900; // Golden ratio
@@ -86,7 +97,22 @@ export const Scoreboard = (props: ScoreboardProps) => {
         </View>
         <View style={{ flex: GOLDEN_RATIO }}>
           <View style={{ flex: 2 }}>
-            <Clock clock={gameState.clock} color={'red'}></Clock>
+            <Clock
+              clock={getClockString(gameState.clockMs)}
+              color={'red'}
+              onPressRight={() => {
+                handleOnPress(true, props.onClockPress);
+              }}
+              onPressLeft={() => {
+                handleOnPress(false, props.onClockPress);
+              }}
+              onLongPressRight={() => {
+                handleOnPress(true, props.onClockLongPress);
+              }}
+              onLongPressLeft={() => {
+                handleOnPress(false, props.onClockLongPress);
+              }}
+            ></Clock>
           </View>
           <View style={{ flex: 1 }}>
             <Score
@@ -152,7 +178,29 @@ export const Scoreboard = (props: ScoreboardProps) => {
           ></Score>
         </View>
         <View style={styles.foulsAndShotClockRow}>
-          <Score title={'shot'} score={gameState.shotClock} color='red'></Score>
+          <Score
+            title={'shot'}
+            score={Math.round(gameState.shotClockMs / 1000)}
+            color='red'
+            onPressRight={() => {
+              handleOnPress(true, props.onShotClockPress);
+            }}
+            onPressLeft={() => {
+              handleOnPress(false, props.onShotClockPress);
+            }}
+            onLongPressRight={() => {
+              handleOnPress(true, props.onShotClockLongPress);
+            }}
+            onLongPressLeft={() => {
+              handleOnPress(false, props.onShotClockLongPress);
+            }}
+            onPressIn={(rightSide: boolean) => {
+              handleOnPress(rightSide, props.onShotClockPressIn);
+            }}
+            onPressOut={(rightSide: boolean) => {
+              handleOnPress(rightSide, props.onShotClockPressOut);
+            }}
+          ></Score>
         </View>
         <View style={styles.foulsAndShotClockRow}>
           <Score

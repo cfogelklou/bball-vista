@@ -14,6 +14,8 @@ export type ScoreProps = {
   onPressLeft?: () => void;
   onLongPressRight?: () => void;
   onLongPressLeft?: () => void;
+  onPressIn?: (rightSide: boolean) => void;
+  onPressOut?: (rightSide: boolean) => void;
 };
 
 export const _Score = (props: ScoreProps) => {
@@ -30,6 +32,12 @@ export const _Score = (props: ScoreProps) => {
   function handleOnPress(cb?: () => void) {
     if (cb) {
       cb();
+    }
+  }
+
+  function handleOnPressInOut(rightSide: boolean, cb?: (rightSide: boolean) => void) {
+    if (cb) {
+      cb(rightSide);
     }
   }
 
@@ -69,6 +77,12 @@ export const _Score = (props: ScoreProps) => {
         onLongPress={() => {
           handleOnPress(props.onLongPressLeft);
         }}
+        onPressIn={() => {
+          handleOnPressInOut(false, props.onPressIn);
+        }}
+        onPressOut={() => {
+          handleOnPressInOut(false, props.onPressOut);
+        }}
         style={{
           position: 'absolute',
           top: 0,
@@ -84,6 +98,12 @@ export const _Score = (props: ScoreProps) => {
         }}
         onLongPress={() => {
           handleOnPress(props.onLongPressRight);
+        }}
+        onPressIn={() => {
+          handleOnPressInOut(true, props.onPressIn);
+        }}
+        onPressOut={() => {
+          handleOnPressInOut(true, props.onPressOut);
         }}
         style={{
           position: 'absolute',
