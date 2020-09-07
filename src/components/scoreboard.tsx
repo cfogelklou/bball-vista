@@ -4,26 +4,7 @@ import { Themes } from '../themes/themes';
 import { Score } from '../components/score';
 import { Clock } from '../components/clock';
 import deepEqual from 'deep-equal';
-
-export type BballGameState = {
-  homePoints: number;
-  awayPoints: number;
-  homeFouls: number;
-  awayFouls: number;
-  clock: number;
-  shotClock: number;
-  period: number;
-};
-
-export const defaultGameState: BballGameState = {
-  homePoints: 0,
-  awayPoints: 0,
-  homeFouls: 0,
-  awayFouls: 0,
-  clock: 10,
-  shotClock: 24,
-  period: 0,
-};
+import { BballGameState, defaultGameState } from '../bball_logic';
 
 export type ScoreboardProps = {
   width: number;

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { Themes } from '../themes/themes';
 import { Scoreboard } from '../components/scoreboard';
-import { BballLogic } from '../bball_logic';
+import { BballLogic, BballGameState } from '../bball_logic';
 
 export type BballProps = {
   placeholder?: string;
@@ -10,7 +10,12 @@ export type BballProps = {
 
 export const Bball = (props: any | BballProps) => {
   const dim = Dimensions.get('window');
-  const [gameState, setGameState] = useState(BballLogic.getInst().getState());
+
+  const [gameState, setGameState] = useState(
+    BballLogic.getInst((state: BballGameState) => {
+      setGameState(state);
+    }).getState(),
+  );
 
   return (
     <View style={[styles.container, { width: dim.width, height: dim.height }]}>
