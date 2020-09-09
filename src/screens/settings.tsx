@@ -57,6 +57,8 @@ export const Settings = (props: any) => {
         onPress={() => {
           const bb = BballLogic.getInst();
           if (minutes > 0) {
+            bb.minutesPerPeriod = minutes;
+            bb.newGame();
             nav.navigate('bball');
           }
         }}
