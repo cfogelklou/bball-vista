@@ -73,6 +73,9 @@ export const Scoreboard = (props: ScoreboardProps) => {
     }
   }
 
+  const bonusAway = gameState.homeFouls >= 5 ? 'BONUS' : '';
+  const bonusHome = gameState.awayFouls >= 5 ? 'BONUS' : '';
+
   return (
     <View style={{ width: scoreboardWidth, height: scoreboardHeight }}>
       <View style={styles.scoresAndClock}>
@@ -163,6 +166,7 @@ export const Scoreboard = (props: ScoreboardProps) => {
             title={'fouls'}
             score={gameState.homeFouls}
             color='yellow'
+            subtitle={bonusHome}
             onPressRight={() => {
               handleOnPress(true, props.onHomeFoulsPress);
             }}
@@ -205,6 +209,7 @@ export const Scoreboard = (props: ScoreboardProps) => {
         <View style={styles.foulsAndShotClockRow}>
           <Score
             title={'fouls'}
+            subtitle={bonusAway}
             score={gameState.awayFouls}
             color='yellow'
             onPressRight={() => {

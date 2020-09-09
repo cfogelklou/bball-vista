@@ -10,6 +10,7 @@ export type ScoreProps = {
   score: number;
   color?: string;
   isHorizontal?: boolean;
+  subtitle?: string;
   onPressRight?: () => void;
   onPressLeft?: () => void;
   onLongPressRight?: () => void;
@@ -24,6 +25,7 @@ export const Score = (props: ScoreProps) => {
   const color = props.color ? props.color : 'green';
 
   const [titleSize, setTitleSize] = useState(1);
+  const [subTitleSize, setSubTitleSize] = useState(1);
   const [fontSize, setFontSize] = useState(1);
   const [width, setWidth] = useState(1);
   const [height, setHeight] = useState(1);
@@ -48,6 +50,7 @@ export const Score = (props: ScoreProps) => {
     setWidth(width);
     setHeight(height);
     setMargin(height * 0.05 * multiply);
+    setSubTitleSize(height * 0.1 * multiply);
   };
 
   const titleAndScore = props.isHorizontal ? styles.titleAndScoreHoriz : styles.titleAndScore;
@@ -67,6 +70,9 @@ export const Score = (props: ScoreProps) => {
           <View style={[styles.scoreView, { margin: margin }]}>
             <Text style={[styles.score, { fontSize: fontSize, color: color }]}>{score}</Text>
           </View>
+          <Text style={[styles.subtitle, { fontSize: subTitleSize, color: color }]}>
+            {props.subtitle}
+          </Text>
         </View>
       </View>
       <TouchableOpacity
@@ -133,6 +139,11 @@ const styles = StyleSheet.create({
     backgroundColor: Themes.colors.almost_black,
     alignSelf: 'center',
     color: 'white',
+  },
+  subtitle: {
+    fontFamily: 'monotype',
+    backgroundColor: Themes.colors.almost_black,
+    alignSelf: 'center',
   },
   scoreView: {
     alignSelf: 'stretch',
