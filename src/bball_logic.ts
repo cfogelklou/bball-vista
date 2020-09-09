@@ -1,5 +1,4 @@
 import AsyncStorage from '@react-native-community/async-storage';
-import deepEqual from 'deep-equal';
 
 let singleton: null | BballLogic = null;
 
