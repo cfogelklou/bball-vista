@@ -36,8 +36,8 @@ export type ScoreboardProps = {
 const GOLDEN_RATIO = 1600 / 900; // Golden ratio
 
 export const Scoreboard = (props: ScoreboardProps) => {
-  const [width, setWidth] = useState(1.0);
-  const [height, setHeight] = useState(1.0);
+  const [width, setWidth] = useState(props.width - 1);
+  const [height, setHeight] = useState(props.height - 1);
   const [scoreboardWidth, setScoreboardWidth] = useState(1.0);
   const [scoreboardHeight, setScoreboardHeight] = useState(1.0);
   const [gameState, setGameState] = useState<BballGameState>(defaultGameState);
@@ -59,8 +59,8 @@ export const Scoreboard = (props: ScoreboardProps) => {
     setScoreboardWidth(w);
     setScoreboardHeight(h);
 
-    setWidth(props.width);
-    setHeight(props.height);
+    setWidth(width);
+    setHeight(height);
   };
 
   if (props.width !== width || props.height !== height) {
@@ -74,7 +74,14 @@ export const Scoreboard = (props: ScoreboardProps) => {
   }
 
   return (
-    <View style={{ width: scoreboardWidth, height: scoreboardHeight }}>
+    <View
+      style={{
+        width: scoreboardWidth,
+        height: scoreboardHeight,
+        borderWidth: 1,
+        borderColor: 'green',
+      }}
+    >
       <View style={styles.scoresAndClock}>
         <View style={styles.scoreAndBonus}>
           <Score
@@ -227,8 +234,8 @@ export const Scoreboard = (props: ScoreboardProps) => {
 };
 
 const debugBorders = {
-  //borderWidth: 1,
-  //borderColor: 'red',
+  borderWidth: 1,
+  borderColor: 'red',
 };
 const styles = StyleSheet.create({
   container: {

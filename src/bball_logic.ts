@@ -105,12 +105,25 @@ class BballGame {
     }
   }
 
+  addToShotClock(seconds: number) {
+    this.shotClockMs += seconds * 1000;
+    this.shotClockMs = Math.max(0, this.shotClockMs);
+    this.shotClockMs = Math.min(24000, this.shotClockMs);
+
+    BballLogic.getInst()._setDirty();
+    return this.period;
+  }
+
   getClock(): string {
     return getClockString(this.clockMs);
   }
 
   getShotClock(): string {
     return getShotClockString(this.shotClockMs);
+  }
+
+  getShotClockSeconds(): number {
+    return Math.ceil(this.shotClockMs / 1000);
   }
 }
 

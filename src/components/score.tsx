@@ -1,4 +1,4 @@
-import React, { useState, memo } from 'react';
+import React, { useState, memo, useEffect } from 'react';
 
 import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { Themes } from '../themes/themes';
@@ -18,7 +18,7 @@ export type ScoreProps = {
   onPressOut?: (rightSide: boolean) => void;
 };
 
-export const _Score = (props: ScoreProps) => {
+export const Score = (props: ScoreProps) => {
   const score = props.score ? props.score : 0;
   const title = props.title ? props.title.toUpperCase() : '';
   const color = props.color ? props.color : 'green';
@@ -28,6 +28,9 @@ export const _Score = (props: ScoreProps) => {
   const [width, setWidth] = useState(1);
   const [height, setHeight] = useState(1);
   const [margin, setMargin] = useState(1);
+  useEffect(() => {
+    setHeight(2);
+  }, []);
 
   function handleOnPress(cb?: () => void) {
     if (cb) {
@@ -116,8 +119,6 @@ export const _Score = (props: ScoreProps) => {
     </>
   );
 };
-
-export const Score = memo(_Score);
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
