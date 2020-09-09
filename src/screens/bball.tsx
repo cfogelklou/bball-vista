@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { View, StyleSheet, Dimensions } from 'react-native';
 import { Themes } from '../themes/themes';
 import { Scoreboard } from '../components/scoreboard';
 import { BballLogic, BballGameState, defaultGameState } from '../bball_logic';
@@ -13,6 +13,12 @@ const SHOT_CLOCK_NOT_PRESSED = 0;
 const SHOT_CLOCK_PRESSED_LEFT = 1;
 const SHOT_CLOCK_PRESSED_RIGHT = 2;
 
+type BballState = {
+  longPressCount: number;
+  shotClockPressedIn: number;
+  gameState: BballGameState;
+};
+
 export class Bball extends React.Component {
   setGameStateIfChanged = (gamestate: BballGameState) => {
     if (!deepEqual(gamestate, this.state.gameState)) {
@@ -22,11 +28,12 @@ export class Bball extends React.Component {
 
   bb = BballLogic.getInst(this.setGameStateIfChanged);
 
-  state = {
-    count: 0,
+  state: BballState = {
+    longPressCount: 0,
     shotClockPressedIn: SHOT_CLOCK_NOT_PRESSED,
     gameState: defaultGameState,
   };
+  interval: undefined | NodeJS.Timeout = undefined;
 
   constructor(props: any) {
     super(props);
@@ -36,11 +43,7 @@ export class Bball extends React.Component {
   shotClockHandler = () => {
     const newState = BballLogic.getInst().getState();
 
-    if (0 === this.state.count % 5) {
-      console.log(
-        'shotClockPressedIn = ' + this.state.shotClockPressedIn + ' at count ',
-        this.state.count,
-      );
+    if (2 === this.state.longPressCount % 3) {
       if (this.state.shotClockPressedIn !== SHOT_CLOCK_NOT_PRESSED) {
         if (!this.bb.isClockRunning()) {
           const seconds = this.state.shotClockPressedIn === SHOT_CLOCK_PRESSED_LEFT ? -1 : 1;
@@ -53,15 +56,20 @@ export class Bball extends React.Component {
       }
     }
     this.setGameStateIfChanged(newState);
-    return this.state.count;
+    return this.state.longPressCount;
   };
 
   componentDidMount() {
-    const interval = setInterval(() => {
+    this.interval = setInterval(() => {
       this.shotClockHandler();
-      this.setState({ count: this.state.count + 1 });
+      this.setState({ longPressCount: this.state.longPressCount + 1 });
     }, 100);
-    return () => clearInterval(interval);
+  }
+
+  componentWillUnmount() {
+    if (this.interval) {
+      clearInterval(this.interval);
+    }
   }
 
   render() {
@@ -103,17 +111,31 @@ export class Bball extends React.Component {
             this.bb.resetClock();
           }}
           onShotClockPress={(_rightSide: boolean) => {
-            const seconds = _rightSide ? 24 : 14;
-            this.bb.resetShotClock(seconds);
+            const current = this.bb.game.getShotClockSeconds();
+            if (this.bb.isClockRunning()) {
+              const seconds = _rightSide ? 24 : 14;
+              if (current <= seconds) {
+                this.bb.resetShotClock(seconds);
+              }
+            } else {
+              let seconds = 24;
+              if (_rightSide) {
+                seconds = current < 14 || current === 24 ? 14 : 24;
+              } else {
+                seconds = current - 1;
+              }
+
+              this.bb.resetShotClock(seconds);
+            }
           }}
           onShotClockPressIn={(_rightSide: boolean) => {
             const press = _rightSide ? SHOT_CLOCK_PRESSED_RIGHT : SHOT_CLOCK_PRESSED_LEFT;
             console.log('Shot clock pressed in ', press);
-            this.state.setShotClockPressedIn(shotClockPressedIn);
+            this.setState({ longPressCount: 0, shotClockPressedIn: press });
           }}
           onShotClockPressOut={(_rightSide: boolean) => {
             console.log('Shot clock pressed out');
-            setShotClockPressedIn(SHOT_CLOCK_NOT_PRESSED);
+            this.setState({ longPressCount: 0, shotClockPressedIn: SHOT_CLOCK_NOT_PRESSED });
           }}
         />
       </View>

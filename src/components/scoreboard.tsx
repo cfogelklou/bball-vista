@@ -59,8 +59,8 @@ export const Scoreboard = (props: ScoreboardProps) => {
     setScoreboardWidth(w);
     setScoreboardHeight(h);
 
-    setWidth(props.width);
-    setHeight(props.height);
+    setWidth(width);
+    setHeight(height);
   };
 
   if (props.width !== width || props.height !== height) {
