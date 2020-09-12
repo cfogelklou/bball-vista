@@ -114,9 +114,9 @@ export class Bball extends React.Component {
             const current = this.bb.game.getShotClockSeconds();
             if (this.bb.isClockRunning()) {
               const seconds = _rightSide ? 24 : 14;
-              if (current <= seconds) {
-                this.bb.resetShotClock(seconds);
-              }
+              //if (current <= seconds) {
+              this.bb.resetShotClock(seconds);
+              //}
             } else {
               let seconds = 24;
               if (_rightSide) {
