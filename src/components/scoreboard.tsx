@@ -1,10 +1,16 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { Themes } from '../themes/themes';
 import { Score } from '../components/score';
 import { Clock } from '../components/clock';
+import { FontAwesome } from '../components/vector-icons';
 import deepEqual from 'deep-equal';
-import { BballGameState, defaultGameState } from '../bball_logic';
+import {
+  BballGameState,
+  defaultGameState,
+  getClockString,
+  getShotClockString,
+} from '../bball_logic';
 
 export type ScoreboardProps = {
   width: number;
@@ -18,6 +24,15 @@ export type ScoreboardProps = {
   onHomeFoulsLongPress?: (rightSide: boolean) => void;
   onAwayFoulsPress?: (rightSide: boolean) => void;
   onAwayFoulsLongPress?: (rightSide: boolean) => void;
+  onPeriodPress?: (rightSide: boolean) => void;
+  onPeriodLongPress?: (rightSide: boolean) => void;
+  onClockPress?: (rightSide: boolean) => void;
+  onClockLongPress?: (rightSide: boolean) => void;
+  onShotClockPress?: (rightSide: boolean) => void;
+  onShotClockLongPress?: (rightSide: boolean) => void;
+  onShotClockPressIn?: (rightSide: boolean) => void;
+  onShotClockPressOut?: (rightSide: boolean) => void;
+  onPossessionArrow?: (rightSide: boolean) => void;
 };
 
 const GOLDEN_RATIO = 1600 / 900; // Golden ratio
@@ -25,6 +40,7 @@ const GOLDEN_RATIO = 1600 / 900; // Golden ratio
 export const Scoreboard = (props: ScoreboardProps) => {
   const [width, setWidth] = useState(1.0);
   const [height, setHeight] = useState(1.0);
+  const [caretSize, setCaretSize] = useState(1.0);
   const [scoreboardWidth, setScoreboardWidth] = useState(1.0);
   const [scoreboardHeight, setScoreboardHeight] = useState(1.0);
   const [gameState, setGameState] = useState<BballGameState>(defaultGameState);
@@ -46,8 +62,8 @@ export const Scoreboard = (props: ScoreboardProps) => {
     setScoreboardWidth(w);
     setScoreboardHeight(h);
 
-    setWidth(props.width);
-    setHeight(props.height);
+    setWidth(width);
+    setHeight(height);
   };
 
   if (props.width !== width || props.height !== height) {
@@ -59,6 +75,11 @@ export const Scoreboard = (props: ScoreboardProps) => {
       fn(rightSide);
     }
   }
+
+  const bonusAway = gameState.homeFouls >= 5 ? 'BONUS' : '';
+  const bonusHome = gameState.awayFouls >= 5 ? 'BONUS' : '';
+  const homePossColor = gameState.possessionHome ? 'red' : Themes.colors.dark_grey;
+  const awayPossColor = !gameState.possessionHome ? 'red' : Themes.colors.dark_grey;
 
   return (
     <View style={{ width: scoreboardWidth, height: scoreboardHeight }}>
@@ -84,15 +105,76 @@ export const Scoreboard = (props: ScoreboardProps) => {
         </View>
         <View style={{ flex: GOLDEN_RATIO }}>
           <View style={{ flex: 2 }}>
-            <Clock clock={gameState.clock} color={'red'}></Clock>
+            <Clock
+              clock={getClockString(gameState.clockMs)}
+              color={'red'}
+              onPressRight={() => {
+                handleOnPress(true, props.onClockPress);
+              }}
+              onPressLeft={() => {
+                handleOnPress(false, props.onClockPress);
+              }}
+              onLongPressRight={() => {
+                handleOnPress(true, props.onClockLongPress);
+              }}
+              onLongPressLeft={() => {
+                handleOnPress(false, props.onClockLongPress);
+              }}
+            ></Clock>
           </View>
           <View style={{ flex: 1 }}>
-            <Score
-              title={'period'}
-              score={gameState.period}
-              color='red'
-              isHorizontal={true}
-            ></Score>
+            <View style={{ height: '100%', flexDirection: 'row' }}>
+              <TouchableOpacity
+                style={styles.possessionArrowView}
+                onLayout={(a: any) => {
+                  console.log('Got layout:', a.nativeEvent.layout);
+                  const size = Math.min(a.nativeEvent.layout.width, a.nativeEvent.layout.height);
+                  setCaretSize(size * 0.7);
+                }}
+                onPress={() => {
+                  handleOnPress(false, props.onPossessionArrow);
+                }}
+              >
+                <FontAwesome
+                  name='caret-left'
+                  color={homePossColor}
+                  size={caretSize}
+                  style={{ alignSelf: 'flex-start' }}
+                />
+              </TouchableOpacity>
+
+              <Score
+                title={'period'}
+                score={gameState.period}
+                color='red'
+                isHorizontal={true}
+                onPressRight={() => {
+                  handleOnPress(true, props.onPeriodPress);
+                }}
+                onPressLeft={() => {
+                  handleOnPress(false, props.onPeriodPress);
+                }}
+                onLongPressRight={() => {
+                  handleOnPress(true, props.onPeriodLongPress);
+                }}
+                onLongPressLeft={() => {
+                  handleOnPress(false, props.onPeriodLongPress);
+                }}
+              ></Score>
+              <TouchableOpacity
+                style={styles.possessionArrowView}
+                onPress={() => {
+                  handleOnPress(true, props.onPossessionArrow);
+                }}
+              >
+                <FontAwesome
+                  name='caret-right'
+                  color={awayPossColor}
+                  size={caretSize}
+                  style={{ alignSelf: 'flex-end' }}
+                />
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
         <View style={styles.scoreAndBonus}>
@@ -123,6 +205,7 @@ export const Scoreboard = (props: ScoreboardProps) => {
             title={'fouls'}
             score={gameState.homeFouls}
             color='yellow'
+            subtitle={bonusHome}
             onPressRight={() => {
               handleOnPress(true, props.onHomeFoulsPress);
             }}
@@ -138,11 +221,34 @@ export const Scoreboard = (props: ScoreboardProps) => {
           ></Score>
         </View>
         <View style={styles.foulsAndShotClockRow}>
-          <Score title={'shot'} score={gameState.shotClock} color='red'></Score>
+          <Score
+            title={'shot'}
+            score={Math.round(gameState.shotClockMs / 1000)}
+            color='red'
+            onPressRight={() => {
+              handleOnPress(true, props.onShotClockPress);
+            }}
+            onPressLeft={() => {
+              handleOnPress(false, props.onShotClockPress);
+            }}
+            onLongPressRight={() => {
+              handleOnPress(true, props.onShotClockLongPress);
+            }}
+            onLongPressLeft={() => {
+              handleOnPress(false, props.onShotClockLongPress);
+            }}
+            onPressIn={(rightSide: boolean) => {
+              handleOnPress(rightSide, props.onShotClockPressIn);
+            }}
+            onPressOut={(rightSide: boolean) => {
+              handleOnPress(rightSide, props.onShotClockPressOut);
+            }}
+          ></Score>
         </View>
         <View style={styles.foulsAndShotClockRow}>
           <Score
             title={'fouls'}
+            subtitle={bonusAway}
             score={gameState.awayFouls}
             color='yellow'
             onPressRight={() => {
@@ -175,6 +281,7 @@ const styles = StyleSheet.create({
   scoresAndClock: { flexDirection: 'row', flex: 1.4, ...debugBorders },
   spacer: { flex: 0.2, borderTopWidth: 1, borderTopColor: 'white' },
   scoreAndBonus: { flex: 1, ...debugBorders },
+  possessionArrowView: { flex: 0.5, ...debugBorders },
   foulsAndShotClock: {
     flexDirection: 'row',
     justifyContent: 'center',

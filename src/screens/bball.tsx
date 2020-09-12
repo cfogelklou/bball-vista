@@ -1,52 +1,156 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import React from 'react';
+import { View, StyleSheet, Dimensions } from 'react-native';
 import { Themes } from '../themes/themes';
 import { Scoreboard } from '../components/scoreboard';
-import { BballLogic, BballGameState } from '../bball_logic';
+import { BballLogic, BballGameState, defaultGameState } from '../bball_logic';
+import deepEqual from 'deep-equal';
 
 export type BballProps = {
   placeholder?: string;
 };
 
-export const Bball = (props: any | BballProps) => {
-  const dim = Dimensions.get('window');
+const SHOT_CLOCK_NOT_PRESSED = 0;
+const SHOT_CLOCK_PRESSED_LEFT = 1;
+const SHOT_CLOCK_PRESSED_RIGHT = 2;
 
-  const [gameState, setGameState] = useState(
-    BballLogic.getInst((state: BballGameState) => {
-      setGameState(state);
-    }).getState(),
-  );
-
-  return (
-    <View style={[styles.container, { width: dim.width, height: dim.height }]}>
-      <Scoreboard
-        width={dim.width}
-        height={dim.height}
-        gameState={gameState}
-        onHomeScorePress={(rightSide) => {
-          const addPoints = rightSide ? 1 : -1;
-          BballLogic.getInst().game.homeTeam.addPoints(addPoints);
-          setGameState(BballLogic.getInst().getState());
-        }}
-        onAwayScorePress={(rightSide) => {
-          const addPoints = rightSide ? 1 : -1;
-          BballLogic.getInst().game.awayTeam.addPoints(addPoints);
-          setGameState(BballLogic.getInst().getState());
-        }}
-        onHomeFoulsPress={(rightSide) => {
-          const num = rightSide ? 1 : -1;
-          BballLogic.getInst().game.homeTeam.addFouls(num);
-          setGameState(BballLogic.getInst().getState());
-        }}
-        onAwayFoulsPress={(rightSide) => {
-          const num = rightSide ? 1 : -1;
-          BballLogic.getInst().game.awayTeam.addFouls(num);
-          setGameState(BballLogic.getInst().getState());
-        }}
-      />
-    </View>
-  );
+type BballState = {
+  longPressCount: number;
+  shotClockPressedIn: number;
+  gameState: BballGameState;
 };
+
+export class Bball extends React.Component {
+  setGameStateIfChanged = (gamestate: BballGameState) => {
+    if (!deepEqual(gamestate, this.state.gameState)) {
+      this.setState({ gameState: { ...gamestate } });
+    }
+  };
+
+  bb = BballLogic.getInst(this.setGameStateIfChanged);
+
+  state: BballState = {
+    longPressCount: 0,
+    shotClockPressedIn: SHOT_CLOCK_NOT_PRESSED,
+    gameState: defaultGameState,
+  };
+  interval: undefined | NodeJS.Timeout = undefined;
+
+  constructor(props: any) {
+    super(props);
+    this.setState({ gameState: this.bb.getState() });
+  }
+
+  shotClockHandler = () => {
+    const newState = BballLogic.getInst().getState();
+
+    if (2 === this.state.longPressCount % 3) {
+      if (this.state.shotClockPressedIn !== SHOT_CLOCK_NOT_PRESSED) {
+        if (!this.bb.isClockRunning()) {
+          const seconds = this.state.shotClockPressedIn === SHOT_CLOCK_PRESSED_LEFT ? -1 : 1;
+          let milliseconds = newState.shotClockMs + seconds * 1000;
+          milliseconds = Math.max(0, milliseconds);
+          milliseconds = Math.min(24000, milliseconds);
+          this.bb.resetShotClock(Math.round(milliseconds / 1000));
+          newState.shotClockMs = milliseconds;
+        }
+      }
+    }
+    this.setGameStateIfChanged(newState);
+    return this.state.longPressCount;
+  };
+
+  componentDidMount() {
+    this.interval = setInterval(() => {
+      this.shotClockHandler();
+      this.setState({ longPressCount: this.state.longPressCount + 1 });
+    }, 100);
+  }
+
+  componentWillUnmount() {
+    if (this.interval) {
+      clearInterval(this.interval);
+    }
+  }
+
+  render() {
+    const dim = Dimensions.get('window');
+
+    return (
+      <View style={[styles.container, { width: dim.width, height: dim.height }]}>
+        <Scoreboard
+          width={dim.width}
+          height={dim.height}
+          gameState={this.state.gameState}
+          onHomeScorePress={(rightSide) => {
+            const addPoints = rightSide ? 1 : -1;
+            this.bb.game.homeTeam.addPoints(addPoints);
+          }}
+          onAwayScorePress={(rightSide) => {
+            const addPoints = rightSide ? 1 : -1;
+            this.bb.game.awayTeam.addPoints(addPoints);
+          }}
+          onHomeFoulsPress={(rightSide) => {
+            const num = rightSide ? 1 : -1;
+            this.bb.game.homeTeam.addFouls(num);
+          }}
+          onAwayFoulsPress={(rightSide) => {
+            const num = rightSide ? 1 : -1;
+            this.bb.game.awayTeam.addFouls(num);
+          }}
+          onPeriodPress={(rightSide) => {
+            const num = rightSide ? 1 : -1;
+            this.bb.game.addPeriod(num);
+          }}
+          onPeriodLongPress={(rightSide) => {
+            this.bb.newGame();
+          }}
+          onClockPress={(_rightSide) => {
+            this.bb.toggleClock();
+          }}
+          onClockLongPress={(_rightSide) => {
+            this.bb.resetClock();
+          }}
+          onShotClockPress={(_rightSide: boolean) => {
+            const current = this.bb.game.getShotClockSeconds();
+            if (this.bb.isClockRunning()) {
+              const seconds = _rightSide ? 24 : 14;
+              if (current <= seconds) {
+                this.bb.resetShotClock(seconds);
+              }
+            } else {
+              let seconds = 24;
+              if (_rightSide) {
+                seconds = current < 14 || current === 24 ? 14 : 24;
+              } else {
+                seconds = current - 1;
+              }
+
+              this.bb.resetShotClock(seconds);
+            }
+          }}
+          onShotClockPressIn={(_rightSide: boolean) => {
+            const press = _rightSide ? SHOT_CLOCK_PRESSED_RIGHT : SHOT_CLOCK_PRESSED_LEFT;
+            console.log('Shot clock pressed in ', press);
+            this.setState({ longPressCount: 0, shotClockPressedIn: press });
+          }}
+          onShotClockPressOut={(_rightSide: boolean) => {
+            console.log('Shot clock pressed out');
+            this.setState({ longPressCount: 0, shotClockPressedIn: SHOT_CLOCK_NOT_PRESSED });
+          }}
+          onPossessionArrow={(_rightSide: boolean) => {
+            console.log('Arrow pressed');
+            //this.bb.togglePossession();
+            if (_rightSide) {
+              this.bb.setPossessionAway();
+            } else {
+              this.bb.setPossessionHome();
+            }
+          }}
+        />
+      </View>
+    );
+  }
+}
 
 const debugBorders = {
   borderWidth: 1,

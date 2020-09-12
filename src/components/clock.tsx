@@ -5,7 +5,7 @@ import { Themes } from '../themes/themes';
 
 export type ClockProps = {
   containerStyle?: any;
-  clock: number;
+  clock: string;
   color?: string;
   onPressRight?: () => void;
   onPressLeft?: () => void;
@@ -17,29 +17,6 @@ type ClockDimensions = {
   myWidth: number;
   myHeight: number;
 };
-
-function clockToString(c: number, showTensAlways: boolean = false) {
-  let d = c;
-  let tens = 0;
-  let ones = 0;
-  if (showTensAlways) {
-    tens = Math.floor(d / 10) % 10;
-    d = d - tens * 10;
-    ones = Math.floor(d / 1) % 10;
-  } else {
-    ones = Math.floor(d / 1);
-  }
-  d = d - ones * 1;
-  const tenths = Math.floor(d * 10) % 10;
-  d = d - tenths / 10;
-  const hundredths = Math.floor(d * 100) % 10;
-  d = d - hundredths / 100;
-  if (showTensAlways) {
-    return tens.toString() + ones.toString() + ':' + tenths.toString() + hundredths.toString();
-  } else {
-    return ones.toString() + ':' + tenths.toString() + hundredths.toString();
-  }
-}
 
 export const Clock = (props: ClockProps) => {
   // xx.xx
@@ -84,9 +61,7 @@ export const Clock = (props: ClockProps) => {
       >
         <View style={styles.black}>
           <View style={[styles.clockView, { margin: margin }]}>
-            <Text style={[styles.clock, { fontSize: fontSize, color: color }]}>
-              {clockToString(clock)}
-            </Text>
+            <Text style={[styles.clock, { fontSize: fontSize, color: color }]}>{clock}</Text>
           </View>
         </View>
       </View>
