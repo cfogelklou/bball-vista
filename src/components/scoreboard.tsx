@@ -120,24 +120,50 @@ export const Scoreboard = (props: ScoreboardProps) => {
             ></Clock>
           </View>
           <View style={{ flex: 1 }}>
-            <Score
-              title={'period'}
-              score={gameState.period}
-              color='red'
-              isHorizontal={true}
-              onPressRight={() => {
-                handleOnPress(true, props.onPeriodPress);
-              }}
-              onPressLeft={() => {
-                handleOnPress(false, props.onPeriodPress);
-              }}
-              onLongPressRight={() => {
-                handleOnPress(true, props.onPeriodLongPress);
-              }}
-              onLongPressLeft={() => {
-                handleOnPress(false, props.onPeriodLongPress);
-              }}
-            ></Score>
+            <View style={{ height: '100%', flexDirection: 'row' }}>
+              <TouchableOpacity
+                style={styles.possessionArrowView}
+                onLayout={(a: any) => {
+                  console.log('Got layout:', a.nativeEvent.layout);
+                  const size = Math.min(a.nativeEvent.layout.width, a.nativeEvent.layout.height);
+                  setCaretSize(size * 0.7);
+                }}
+              >
+                <FontAwesome
+                  name='caret-left'
+                  color='red'
+                  size={caretSize}
+                  style={{ alignSelf: 'flex-start' }}
+                />
+              </TouchableOpacity>
+
+              <Score
+                title={'period'}
+                score={gameState.period}
+                color='red'
+                isHorizontal={true}
+                onPressRight={() => {
+                  handleOnPress(true, props.onPeriodPress);
+                }}
+                onPressLeft={() => {
+                  handleOnPress(false, props.onPeriodPress);
+                }}
+                onLongPressRight={() => {
+                  handleOnPress(true, props.onPeriodLongPress);
+                }}
+                onLongPressLeft={() => {
+                  handleOnPress(false, props.onPeriodLongPress);
+                }}
+              ></Score>
+              <TouchableOpacity style={styles.possessionArrowView}>
+                <FontAwesome
+                  name='caret-right'
+                  color='red'
+                  size={caretSize}
+                  style={{ alignSelf: 'flex-end' }}
+                />
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
         <View style={styles.scoreAndBonus}>

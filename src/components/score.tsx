@@ -1,4 +1,4 @@
-import React, { useState, memo, useEffect } from 'react';
+import React, { useState, memo, useEffect, useRef } from 'react';
 
 import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { Themes } from '../themes/themes';
@@ -74,51 +74,51 @@ export const Score = (props: ScoreProps) => {
             {props.subtitle}
           </Text>
         </View>
+        <TouchableOpacity
+          onPress={() => {
+            console.log('onPressLeft');
+            handleOnPress(props.onPressLeft);
+          }}
+          onLongPress={() => {
+            handleOnPress(props.onLongPressLeft);
+          }}
+          onPressIn={() => {
+            handleOnPressInOut(false, props.onPressIn);
+          }}
+          onPressOut={() => {
+            handleOnPressInOut(false, props.onPressOut);
+          }}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: width / 2,
+            height: height,
+          }}
+        ></TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => {
+            console.log('onPressRight');
+            handleOnPress(props.onPressRight);
+          }}
+          onLongPress={() => {
+            handleOnPress(props.onLongPressRight);
+          }}
+          onPressIn={() => {
+            handleOnPressInOut(true, props.onPressIn);
+          }}
+          onPressOut={() => {
+            handleOnPressInOut(true, props.onPressOut);
+          }}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: width / 2,
+            width: width / 2,
+            height: height,
+          }}
+        ></TouchableOpacity>
       </View>
-      <TouchableOpacity
-        onPress={() => {
-          console.log('onPressLeft');
-          handleOnPress(props.onPressLeft);
-        }}
-        onLongPress={() => {
-          handleOnPress(props.onLongPressLeft);
-        }}
-        onPressIn={() => {
-          handleOnPressInOut(false, props.onPressIn);
-        }}
-        onPressOut={() => {
-          handleOnPressInOut(false, props.onPressOut);
-        }}
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: width / 2,
-          height: height,
-        }}
-      ></TouchableOpacity>
-      <TouchableOpacity
-        onPress={() => {
-          console.log('onPressRight');
-          handleOnPress(props.onPressRight);
-        }}
-        onLongPress={() => {
-          handleOnPress(props.onLongPressRight);
-        }}
-        onPressIn={() => {
-          handleOnPressInOut(true, props.onPressIn);
-        }}
-        onPressOut={() => {
-          handleOnPressInOut(true, props.onPressOut);
-        }}
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: width / 2,
-          width: width / 2,
-          height: height,
-        }}
-      ></TouchableOpacity>
     </>
   );
 };
