@@ -71,6 +71,7 @@ class BballGame {
 
   constructor(minutesPerPeriod: number) {
     this.minutesPerPeriod = minutesPerPeriod;
+    this.clockMs = this.minutesPerPeriod * 60 * 1000;
   }
 
   addPeriod(num: number) {
@@ -173,8 +174,9 @@ export class BballLogic {
   // Create a new game
   newGame() {
     console.log('Creating new game.');
-    this.game = new BballGame(this.minutesPerPeriod);
     this.currState = { ...defaultGameState };
+    this.game = new BballGame(this.minutesPerPeriod);
+    this.resetClock();
     this._setDirty();
   }
 

@@ -3,6 +3,7 @@ import { View, StyleSheet, Dimensions, TextInput, Text, TouchableOpacity } from 
 import { Navigator } from '../abstractions/nav';
 import { Themes } from '../themes/themes';
 import { BballGameState, BballLogic } from '../bball_logic';
+import { NumberPicker } from 'react-number-picker';
 
 import deepEqual from 'deep-equal';
 
@@ -25,11 +26,6 @@ export const Settings = (props: any) => {
 
   return (
     <View style={[styles.container, { width: dim.width, height: dim.height }]}>
-      <View style={styles.field}>
-        <Text style={styles.text}>Match number</Text>
-        <TextInput style={styles.textEntry}></TextInput>
-        <View style={styles.flex8} />
-      </View>
       <View style={styles.field}>
         <Text style={styles.text}>Minutes per period</Text>
         <TextInput
@@ -59,6 +55,7 @@ export const Settings = (props: any) => {
           if (minutes > 0) {
             bb.minutesPerPeriod = minutes;
             bb.newGame();
+
             nav.navigate('bball');
           }
         }}
