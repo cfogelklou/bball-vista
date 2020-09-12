@@ -172,12 +172,15 @@ export class BballLogic {
   }
 
   // Create a new game
-  newGame() {
+  newGame(minutesPerPeriod: number = 0) {
+    minutesPerPeriod = minutesPerPeriod == 0 ? this.minutesPerPeriod : minutesPerPeriod;
     console.log('Creating new game.');
     this.currState = { ...defaultGameState };
+    this.minutesPerPeriod = minutesPerPeriod;
     this.game = new BballGame(this.minutesPerPeriod);
     this.resetClock();
     this._setDirty();
+    console.log('Created game. New state is:', this);
   }
 
   getClock(): string {

@@ -1,10 +1,16 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Dimensions, TextInput, Text, TouchableOpacity } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Dimensions,
+  TextInput,
+  Text,
+  TouchableOpacity,
+  Button,
+} from 'react-native';
 import { Navigator } from '../abstractions/nav';
 import { Themes } from '../themes/themes';
 import { BballGameState, BballLogic } from '../bball_logic';
-import { NumberPicker } from 'react-number-picker';
-
 import deepEqual from 'deep-equal';
 
 const nav = Navigator;
@@ -27,7 +33,13 @@ export const Settings = (props: any) => {
   return (
     <View style={[styles.container, { width: dim.width, height: dim.height }]}>
       <View style={styles.field}>
-        <Text style={styles.text}>Minutes per period</Text>
+        <Text style={styles.text}>Minutes per period:</Text>
+        <Button
+          title={'-1'}
+          onPress={() => {
+            setMinutes(Math.max(1, minutes - 1));
+          }}
+        ></Button>
         <TextInput
           style={styles.textEntry}
           defaultValue={minutes.toString()}
@@ -36,7 +48,7 @@ export const Settings = (props: any) => {
             console.log('b4:', str);
             if (str.length === 0) {
               console.log('a:', 'nada');
-              setMinutes(0);
+              setMinutes(10);
             } else {
               const newMinutes = Number.parseFloat(str);
               let m = Math.max(0, newMinutes);
@@ -46,6 +58,12 @@ export const Settings = (props: any) => {
             }
           }}
         ></TextInput>
+        <Button
+          title={'+1'}
+          onPress={() => {
+            setMinutes(Math.min(30, minutes + 1));
+          }}
+        ></Button>
         <View style={styles.flex8} />
       </View>
       <TouchableOpacity
@@ -53,8 +71,7 @@ export const Settings = (props: any) => {
         onPress={() => {
           const bb = BballLogic.getInst();
           if (minutes > 0) {
-            bb.minutesPerPeriod = minutes;
-            bb.newGame();
+            bb.newGame(minutes);
 
             nav.navigate('bball');
           }
