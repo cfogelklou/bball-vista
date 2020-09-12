@@ -32,6 +32,7 @@ export type ScoreboardProps = {
   onShotClockLongPress?: (rightSide: boolean) => void;
   onShotClockPressIn?: (rightSide: boolean) => void;
   onShotClockPressOut?: (rightSide: boolean) => void;
+  onPossessionArrow?: (rightSide: boolean) => void;
 };
 
 const GOLDEN_RATIO = 1600 / 900; // Golden ratio
@@ -77,6 +78,8 @@ export const Scoreboard = (props: ScoreboardProps) => {
 
   const bonusAway = gameState.homeFouls >= 5 ? 'BONUS' : '';
   const bonusHome = gameState.awayFouls >= 5 ? 'BONUS' : '';
+  const homePossColor = gameState.possessionHome ? 'red' : Themes.colors.dark_grey;
+  const awayPossColor = !gameState.possessionHome ? 'red' : Themes.colors.dark_grey;
 
   return (
     <View style={{ width: scoreboardWidth, height: scoreboardHeight }}>
@@ -128,10 +131,13 @@ export const Scoreboard = (props: ScoreboardProps) => {
                   const size = Math.min(a.nativeEvent.layout.width, a.nativeEvent.layout.height);
                   setCaretSize(size * 0.7);
                 }}
+                onPress={() => {
+                  handleOnPress(false, props.onPossessionArrow);
+                }}
               >
                 <FontAwesome
                   name='caret-left'
-                  color='red'
+                  color={homePossColor}
                   size={caretSize}
                   style={{ alignSelf: 'flex-start' }}
                 />
@@ -155,10 +161,15 @@ export const Scoreboard = (props: ScoreboardProps) => {
                   handleOnPress(false, props.onPeriodLongPress);
                 }}
               ></Score>
-              <TouchableOpacity style={styles.possessionArrowView}>
+              <TouchableOpacity
+                style={styles.possessionArrowView}
+                onPress={() => {
+                  handleOnPress(true, props.onPossessionArrow);
+                }}
+              >
                 <FontAwesome
                   name='caret-right'
-                  color='red'
+                  color={awayPossColor}
                   size={caretSize}
                   style={{ alignSelf: 'flex-end' }}
                 />

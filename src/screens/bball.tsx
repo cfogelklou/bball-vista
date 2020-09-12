@@ -137,6 +137,15 @@ export class Bball extends React.Component {
             console.log('Shot clock pressed out');
             this.setState({ longPressCount: 0, shotClockPressedIn: SHOT_CLOCK_NOT_PRESSED });
           }}
+          onPossessionArrow={(_rightSide: boolean) => {
+            console.log('Arrow pressed');
+            //this.bb.togglePossession();
+            if (_rightSide) {
+              this.bb.setPossessionAway();
+            } else {
+              this.bb.setPossessionHome();
+            }
+          }}
         />
       </View>
     );

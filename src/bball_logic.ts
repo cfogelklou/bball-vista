@@ -65,6 +65,7 @@ class BballGame {
   homeTeam: BballTeam = new BballTeam();
   awayTeam: BballTeam = new BballTeam();
   period: number = 1;
+  possessionHome: boolean = true;
   clockMs: number = this.minutesPerPeriod * 60 * 1000;
   shotClockMs: number = 24 * 1000;
   clockStartTime: number = 0;
@@ -75,9 +76,13 @@ class BballGame {
   }
 
   addPeriod(num: number) {
+    const oldPeriod = this.period;
     this.period += num;
     this.period = Math.max(1, this.period);
     this.period = Math.min(4, this.period);
+    if (oldPeriod !== this.period) {
+      this.possessionHome = !this.possessionHome;
+    }
 
     BballLogic.getInst()._setDirty();
     return this.period;
@@ -135,6 +140,7 @@ export type BballGameState = {
   clockMs: number;
   shotClockMs: number;
   period: number;
+  possessionHome: boolean;
 };
 
 export const defaultGameState: BballGameState = {
@@ -145,6 +151,7 @@ export const defaultGameState: BballGameState = {
   clockMs: 10 * 60 * 1000,
   shotClockMs: 24 * 1000,
   period: 0,
+  possessionHome: true,
 };
 
 const SAVE_ID = '@bball_state';
@@ -209,6 +216,7 @@ export class BballLogic {
       clockMs: this.game.clockMs,
       shotClockMs: this.game.shotClockMs,
       period: this.game.period,
+      possessionHome: this.game.possessionHome,
     };
     return gameState;
   }
@@ -275,5 +283,20 @@ export class BballLogic {
 
   isClockRunning() {
     return this.game.clockStartTime !== 0;
+  }
+
+  togglePossession() {
+    this.game.possessionHome = !this.game.possessionHome;
+    this._setDirty();
+  }
+
+  setPossessionHome() {
+    this.game.possessionHome = true;
+    this._setDirty();
+  }
+
+  setPossessionAway() {
+    this.game.possessionHome = false;
+    this._setDirty();
   }
 }
