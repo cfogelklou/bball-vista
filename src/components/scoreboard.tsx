@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { Themes } from '../themes/themes';
 import { Score } from '../components/score';
 import { Clock } from '../components/clock';
+import { FontAwesome } from '../components/vector-icons';
 import deepEqual from 'deep-equal';
 import {
   BballGameState,
@@ -38,6 +39,7 @@ const GOLDEN_RATIO = 1600 / 900; // Golden ratio
 export const Scoreboard = (props: ScoreboardProps) => {
   const [width, setWidth] = useState(1.0);
   const [height, setHeight] = useState(1.0);
+  const [caretSize, setCaretSize] = useState(1.0);
   const [scoreboardWidth, setScoreboardWidth] = useState(1.0);
   const [scoreboardHeight, setScoreboardHeight] = useState(1.0);
   const [gameState, setGameState] = useState<BballGameState>(defaultGameState);
@@ -242,6 +244,7 @@ const styles = StyleSheet.create({
   scoresAndClock: { flexDirection: 'row', flex: 1.4, ...debugBorders },
   spacer: { flex: 0.2, borderTopWidth: 1, borderTopColor: 'white' },
   scoreAndBonus: { flex: 1, ...debugBorders },
+  possessionArrowView: { flex: 0.5, ...debugBorders },
   foulsAndShotClock: {
     flexDirection: 'row',
     justifyContent: 'center',
