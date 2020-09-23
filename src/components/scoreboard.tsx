@@ -223,7 +223,7 @@ export const Scoreboard = (props: ScoreboardProps) => {
         <View style={styles.foulsAndShotClockRow}>
           <Score
             title={'shot'}
-            score={Math.round(gameState.shotClockMs / 1000)}
+            scoreText={getShotClockString(gameState.shotClockMs)}
             color='red'
             onPressRight={() => {
               handleOnPress(true, props.onShotClockPress);

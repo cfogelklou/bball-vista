@@ -7,7 +7,8 @@ export type ScoreProps = {
   title?: string;
   numDigits?: number;
   containerStyle?: any;
-  score: number;
+  score?: number;
+  scoreText?: string;
   color?: string;
   isHorizontal?: boolean;
   subtitle?: string;
@@ -21,6 +22,7 @@ export type ScoreProps = {
 
 export const Score = (props: ScoreProps) => {
   const score = props.score ? props.score : 0;
+  const scoreText = props.scoreText ? props.scoreText : score.toString();
   const title = props.title ? props.title.toUpperCase() : '';
   const color = props.color ? props.color : 'green';
 
@@ -68,7 +70,7 @@ export const Score = (props: ScoreProps) => {
         <View style={titleAndScore}>
           <Text style={[styles.title, { fontSize: titleSize }]}>{title}</Text>
           <View style={[styles.scoreView, { margin: margin }]}>
-            <Text style={[styles.score, { fontSize: fontSize, color: color }]}>{score}</Text>
+            <Text style={[styles.score, { fontSize: fontSize, color: color }]}>{scoreText}</Text>
           </View>
           <Text style={[styles.subtitle, { fontSize: subTitleSize, color: color }]}>
             {props.subtitle}

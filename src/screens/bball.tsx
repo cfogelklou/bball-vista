@@ -162,6 +162,8 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     backgroundColor: Themes.colors.almost_black,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   scoresAndClock: { flexDirection: 'row', flex: 1, ...debugBorders },
   periodAndBonus: { flexDirection: 'row', flex: 0.2, ...debugBorders },

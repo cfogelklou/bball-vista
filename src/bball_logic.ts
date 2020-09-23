@@ -6,22 +6,49 @@ function getMs(): number {
   return Date.now();
 }
 
-export function getClockString(_ms: number): string {
-  let ms = _ms;
-  const minutes = Math.floor(ms / (60 * 1000));
-  ms = ms - minutes * 60 * 1000;
-  const seconds = Math.floor(ms / 1000);
-  const seconds_1 = Math.floor(seconds / 10);
-  const seconds_0 = seconds - 10 * seconds_1;
-  return minutes.toString() + ':' + seconds_1.toString() + seconds_0.toString();
+function pad2(n: number) {
+  return n > 9 ? '' + n : '0' + n;
 }
 
-export function getShotClockString(_ms: number): string {
-  let ms = _ms;
-  const seconds = Math.floor(ms / 1000);
-  const seconds_1 = Math.floor(seconds / 10);
-  const seconds_0 = seconds - 10 * seconds_1;
-  return seconds_1.toString() + seconds_0.toString();
+function minutesSecondsString(ms: number, showHundredths: boolean = true): string {
+  let rval = '';
+  let m = '';
+  let s = '';
+  let h = '';
+  // Round up to nearest seconds.
+  if (!showHundredths) {
+    let seconds = Math.ceil(ms / 1000);
+    let minutes = Math.floor(seconds / 60);
+    seconds -= minutes * 60;
+    if (minutes > 0) {
+      m = minutes.toString() + ':';
+      s = pad2(seconds);
+    } else {
+      s = seconds.toString();
+    }
+  } else {
+    let hundredths = Math.ceil(ms / 100);
+    let seconds = Math.floor(hundredths / 10);
+    hundredths -= seconds * 10;
+    let minutes = Math.floor(seconds / 60);
+    seconds -= minutes * 60;
+    if (minutes > 0) {
+      m = minutes.toString() + ':';
+      s = pad2(seconds) + '.';
+    } else {
+      s = seconds.toString() + '.';
+    }
+    h = hundredths.toString();
+  }
+  return m + s + h;
+}
+
+export function getClockString(_ms: number): string {
+  return minutesSecondsString(_ms, _ms < 60000);
+}
+
+export function getShotClockString(ms: number): string {
+  return minutesSecondsString(ms, ms < 2000);
 }
 
 class BballTeam {
@@ -93,8 +120,10 @@ class BballGame {
     if (0 !== this.clockStartTime) {
       const timePassed = ms - this.clockStartTime;
       this.clockStartTime = ms;
+      console.log('clock was' + minutesSecondsString(this.clockMs, true));
       this.clockMs -= timePassed;
       this.clockMs = Math.max(0, this.clockMs);
+      console.log('clock is' + minutesSecondsString(this.clockMs, true));
       this.shotClockMs -= timePassed;
       this.shotClockMs = Math.max(0, this.shotClockMs);
     }
@@ -163,6 +192,7 @@ export class BballLogic {
   minutesPerPeriod = 10;
   currState: BballGameState = { ...defaultGameState };
   isDirty: boolean = false;
+  throwAwayRestoreState: boolean = false;
 
   // Get singleton
   static getInst(onConstructedCallback?: (currState: BballGameState) => void): BballLogic {
@@ -180,6 +210,7 @@ export class BballLogic {
 
   // Create a new game
   newGame(minutesPerPeriod: number = 0) {
+    this.throwAwayRestoreState = true;
     minutesPerPeriod = minutesPerPeriod == 0 ? this.minutesPerPeriod : minutesPerPeriod;
     console.log('Creating new game.');
     this.currState = { ...defaultGameState };
@@ -240,15 +271,18 @@ export class BballLogic {
       .then((json: string | null) => {
         const s: BballGameState | null = json ? JSON.parse(json) : null;
         if (s) {
-          this.game.homeTeam.points = s.homePoints;
-          this.game.awayTeam.points = s.awayPoints;
-          this.game.homeTeam.fouls = s.homeFouls;
-          this.game.awayTeam.fouls = s.awayFouls;
-          this.game.clockMs = s.clockMs;
-          this.game.shotClockMs = s.shotClockMs;
-          this.game.period = s.period;
+          if (!this.throwAwayRestoreState) {
+            this.game.homeTeam.points = s.homePoints;
+            this.game.awayTeam.points = s.awayPoints;
+            this.game.homeTeam.fouls = s.homeFouls;
+            this.game.awayTeam.fouls = s.awayFouls;
+            this.game.clockMs = s.clockMs;
+            this.game.shotClockMs = s.shotClockMs;
+            this.game.period = s.period;
+            this.currState = s;
+          }
           this.isDirty = false;
-          this.currState = s;
+          this.throwAwayRestoreState = false;
         }
         if (onConstructedCallback) {
           onConstructedCallback(this.currState);
