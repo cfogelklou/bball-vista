@@ -73,14 +73,15 @@ export class Bball extends React.Component {
 
   shotClockHandler = () => {
     const newState = BballLogic.getInst().getState();
-    if (newState.clockMs == 0) {
+    if (newState.clockMs <= 0) {
       if (this.state.gameState.clockMs > 0) {
         buzzer.play();
         if (this.bb.isClockRunning()) {
           this.bb.toggleClock();
         }
       }
-    } else if (newState.shotClockMs <= 0) {
+    }
+    if (newState.shotClockMs <= 0) {
       if (this.state.gameState.shotClockMs > 0) {
         beeper.play();
       }
