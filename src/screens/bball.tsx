@@ -6,7 +6,7 @@ import { BballLogic, BballGameState, defaultGameState } from '../bball_logic';
 import deepEqual from 'deep-equal';
 import { Howl, Howler } from 'howler';
 const buzz1 = require('../sounds/buzzer.mp3');
-const buzz2 = require('../sounds/buzzer2.mp3');
+const beeps = require('../sounds/5-beeps.wav');
 
 export type BballProps = {
   placeholder?: string;
@@ -25,7 +25,20 @@ type BballState = {
 Howler.volume(0.9);
 
 const buzzer = new Howl({
-  src: [buzz2],
+  src: [buzz1],
+  onend: function () {
+    console.log('Finished!');
+  },
+  onload: () => {
+    console.log('Loaded');
+  },
+  onloaderror: (soundId, error) => {
+    console.log('Got loading error.');
+  },
+});
+
+const beeper = new Howl({
+  src: [beeps],
   onend: function () {
     console.log('Finished!');
   },
@@ -60,9 +73,16 @@ export class Bball extends React.Component {
 
   shotClockHandler = () => {
     const newState = BballLogic.getInst().getState();
-    if (newState.shotClockMs <= 0) {
-      if (this.state.gameState.shotClockMs) {
+    if (newState.clockMs == 0) {
+      if (this.state.gameState.clockMs > 0) {
         buzzer.play();
+        if (this.bb.isClockRunning()) {
+          this.bb.toggleClock();
+        }
+      }
+    } else if (newState.shotClockMs <= 0) {
+      if (this.state.gameState.shotClockMs > 0) {
+        beeper.play();
       }
     }
 
