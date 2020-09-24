@@ -4,6 +4,9 @@ import { Themes } from '../themes/themes';
 import { Scoreboard } from '../components/scoreboard';
 import { BballLogic, BballGameState, defaultGameState } from '../bball_logic';
 import deepEqual from 'deep-equal';
+import { Howl, Howler } from 'howler';
+const buzz1 = require('../sounds/buzzer.mp3');
+const buzz2 = require('../sounds/buzzer2.mp3');
 
 export type BballProps = {
   placeholder?: string;
@@ -18,6 +21,21 @@ type BballState = {
   shotClockPressedIn: number;
   gameState: BballGameState;
 };
+
+Howler.volume(0.9);
+
+const buzzer = new Howl({
+  src: [buzz2],
+  onend: function () {
+    console.log('Finished!');
+  },
+  onload: () => {
+    console.log('Loaded');
+  },
+  onloaderror: (soundId, error) => {
+    console.log('Got loading error.');
+  },
+});
 
 export class Bball extends React.Component {
   setGameStateIfChanged = (gamestate: BballGameState) => {
@@ -42,6 +60,11 @@ export class Bball extends React.Component {
 
   shotClockHandler = () => {
     const newState = BballLogic.getInst().getState();
+    if (newState.shotClockMs <= 0) {
+      if (this.state.gameState.shotClockMs) {
+        buzzer.play();
+      }
+    }
 
     if (2 === this.state.longPressCount % 3) {
       if (this.state.shotClockPressedIn !== SHOT_CLOCK_NOT_PRESSED) {

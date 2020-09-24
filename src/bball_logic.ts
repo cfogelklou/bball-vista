@@ -120,10 +120,8 @@ class BballGame {
     if (0 !== this.clockStartTime) {
       const timePassed = ms - this.clockStartTime;
       this.clockStartTime = ms;
-      console.log('clock was' + minutesSecondsString(this.clockMs, true));
       this.clockMs -= timePassed;
       this.clockMs = Math.max(0, this.clockMs);
-      console.log('clock is' + minutesSecondsString(this.clockMs, true));
       this.shotClockMs -= timePassed;
       this.shotClockMs = Math.max(0, this.shotClockMs);
     }
