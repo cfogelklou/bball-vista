@@ -6,7 +6,7 @@ import { BballLogic, BballGameState, defaultGameState } from '../bball_logic';
 import deepEqual from 'deep-equal';
 import { Howl, Howler } from 'howler';
 const buzz1 = require('../sounds/buzzer.mp3');
-const beeps = require('../sounds/5-beeps.wav');
+const beeps = require('../sounds/5-beeps.mp3');
 
 export type BballProps = {
   placeholder?: string;

@@ -301,7 +301,7 @@ export class BballLogic {
   };
 
   resetClock() {
-    this.game.clockMs = this.minutesPerPeriod * 60 * 1000;
+    this.game.clockMs = this.game.minutesPerPeriod * 60 * 1000;
     this._setDirty();
   }
 
