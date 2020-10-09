@@ -11,7 +11,6 @@ import {
 import { Navigator } from '../abstractions/nav';
 import { Themes } from '../themes/themes';
 import { BballGameState, BballLogic } from '../bball_logic';
-import deepEqual from 'deep-equal';
 
 const nav = Navigator;
 
@@ -26,7 +25,6 @@ type BballState = {
 };
 
 export const Settings = (props: any) => {
-  const { navigation } = props;
   const dim = Dimensions.get('window');
   const [minutes, setMinutes] = useState(10);
 
@@ -83,11 +81,6 @@ export const Settings = (props: any) => {
       </TouchableOpacity>
     </View>
   );
-};
-
-const debugBorders = {
-  borderWidth: 1,
-  borderColor: 'red',
 };
 
 const styles = StyleSheet.create({

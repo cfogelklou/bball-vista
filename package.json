@@ -1,7 +1,7 @@
 {
   "name": "bball-vista",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
   "dependencies": {
     "@react-native-community/async-storage": "^1.12.0",
     "@types/react-router-dom": "^5.1.5",

@@ -11,7 +11,6 @@ function pad2(n: number) {
 }
 
 function minutesSecondsString(ms: number, showHundredths: boolean = true): string {
-  let rval = '';
   let m = '';
   let s = '';
   let h = '';
@@ -209,7 +208,7 @@ export class BballLogic {
   // Create a new game
   newGame(minutesPerPeriod: number = 0) {
     this.throwAwayRestoreState = true;
-    minutesPerPeriod = minutesPerPeriod == 0 ? this.minutesPerPeriod : minutesPerPeriod;
+    minutesPerPeriod = minutesPerPeriod === 0 ? this.minutesPerPeriod : minutesPerPeriod;
     console.log('Creating new game.');
     this.currState = { ...defaultGameState };
     this.minutesPerPeriod = minutesPerPeriod;
