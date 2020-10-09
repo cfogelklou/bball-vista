@@ -17,17 +17,17 @@ jobs:
     runs-on: ubuntu-latest
     name: Simply build for deployment
     steps:
-      - name: Checkout submodules
-      - uses: actions/checkout@v1
-        run: |
-          echo Checkout submodules
-          git submodule sync
-          git submodule update --init --recursive
 
-      - name: npm install
-        run: |
-          npm install
+    - name: Checkout submodules
+      run: |
+        echo Checkout submodules
+        git submodule sync
+        git submodule update --init --recursive
 
-      - name: npm run build
-        run: |
-          npm run build
+    - name: npm install
+      run: |
+        npm install
+
+    - name: npm run build
+      run: |
+        npm run build
