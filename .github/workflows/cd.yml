@@ -1,0 +1,33 @@
+name: CD
+
+on:
+  push:
+    # Sequence of patterns matched against refs/heads
+    branches:
+      - master # Push events on master + devel branch
+      - devel
+      - feat/201009_github
+    tags:
+      - '*' # Test all pushed tags
+env:
+  RELEASE: release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Simply build for deployment
+    steps:
+      - name: Checkout submodules
+      - uses: actions/checkout@v1
+        run: |
+          echo Checkout submodules
+          git submodule sync
+          git submodule update --init --recursive
+
+      - name: npm install
+        run: |
+          npm install
+
+      - name: npm run build
+        run: |
+          npm run build
