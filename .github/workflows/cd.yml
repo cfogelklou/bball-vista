@@ -18,6 +18,7 @@ jobs:
     name: Simply build for deployment
     steps:
 
+    - uses: actions/checkout@v1      
     - name: Checkout submodules
       run: |
         echo Checkout submodules
