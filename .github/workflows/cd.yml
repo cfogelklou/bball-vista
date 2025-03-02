@@ -4,8 +4,7 @@ on:
   push:
     # Sequence of patterns matched against refs/heads
     branches:
-      - master # Push events on master + devel branch
-      - devel
+      - '*' # Test all pushed tags
     tags:
       - '*' # Test all pushed tags
 
@@ -23,7 +22,6 @@ on:
   pull_request_review:
     types:
       - submitted
-  status: {}
 env:
   RELEASE: release
 
@@ -33,12 +31,14 @@ jobs:
     name: Simply build for deployment
     steps:
 
-    - uses: actions/checkout@v1      
-    - name: Checkout submodules
-      run: |
-        echo Checkout submodules
-        git submodule sync
-        git submodule update --init --recursive
+    - uses: actions/checkout@v3
+      with:
+        submodules: 'recursive'
+
+    - name: Setup Node.js 16
+      uses: actions/setup-node@v3
+      with:
+        node-version: "16"
 
     - name: npm install
       run: |
