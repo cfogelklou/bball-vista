@@ -1,0 +1,18 @@
+/*
+ * SFTP Batch File Documentation:
+ *
+ * 1. -mkdir bball-vista
+ *    - This command creates a new directory named 'bball-vista' on the remote SFTP server.
+ *    - It ensures that the target directory exists before attempting to upload files.
+ *
+ * 2. put ./build/*.* bball-vista/
+ *    - This command uploads all files from the local './build/' directory that contain a dot in their name (typically indicating a file extension).
+ *    - It places these files into the 'bball-vista' directory on the remote server.
+ *
+ * 3. put -R ./build/* bball-vista/
+ *    - This command recursively uploads all files and directories from the local './build/' directory.
+ *    - The '-R' flag ensures that the entire directory structure, including subdirectories and their contents, is transferred.
+ */
+-mkdir bball-vista
+put ./build/*.* bball-vista/
+put -R ./build/* bball-vista/
