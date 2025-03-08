@@ -46,8 +46,8 @@ jobs:
 
     - name: install and build
       run: |
-        bun install --legacy-peer-deps
-        SKIP_PREFLIGHT_CHECK=true bun run build
+        npm install --legacy-peer-deps
+        SKIP_PREFLIGHT_CHECK=true npm run build
 
     - name: Upload
       if: github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
