@@ -46,7 +46,7 @@ jobs:
 
     - name: install and build
       run: |
-        npm install --legacy-peer-deps
+        npm ci --legacy-peer-deps
         SKIP_PREFLIGHT_CHECK=true npm run build
 
     - name: Upload
