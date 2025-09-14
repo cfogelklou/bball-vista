@@ -1,4 +1,3 @@
-import AsyncStorage from '@react-native-community/async-storage';
 
 let singleton: null | BballLogic = null;
 
@@ -180,7 +179,6 @@ export const defaultGameState: BballGameState = {
   possessionHome: true,
 };
 
-const SAVE_ID = '@bball_state';
 
 // ////////////////////////////////////////////////////////////////////////////
 export class BballLogic {
@@ -249,48 +247,22 @@ export class BballLogic {
     return gameState;
   }
 
-  // save the current game state.
+  // Cast receivers don't need to save state - state comes from sender
   _saveState = () => {
     if (this.isDirty) {
       this.currState = this.getState();
       this.isDirty = false;
     }
-    const jsonValue = JSON.stringify(this.currState);
-    AsyncStorage.setItem(SAVE_ID, jsonValue)
-      .then(() => {})
-      .catch((e) => {
-        console.log('Failed to save current game state:', e);
-      });
+    // No-op for Cast receiver - sender manages state
   };
 
   _restoreState = (onConstructedCallback?: (currState: BballGameState) => void) => {
-    AsyncStorage.getItem(SAVE_ID)
-      .then((json: string | null) => {
-        const s: BballGameState | null = json ? JSON.parse(json) : null;
-        if (s) {
-          if (!this.throwAwayRestoreState) {
-            this.game.homeTeam.points = s.homePoints;
-            this.game.awayTeam.points = s.awayPoints;
-            this.game.homeTeam.fouls = s.homeFouls;
-            this.game.awayTeam.fouls = s.awayFouls;
-            this.game.clockMs = s.clockMs;
-            this.game.shotClockMs = s.shotClockMs;
-            this.game.period = s.period;
-            this.currState = s;
-          }
-          this.isDirty = false;
-          this.throwAwayRestoreState = false;
-        }
-        if (onConstructedCallback) {
-          onConstructedCallback(this.currState);
-        }
-      })
-      .catch((e) => {
-        console.log('Failed to restore current game state:', e);
-        if (onConstructedCallback) {
-          onConstructedCallback(this.currState);
-        }
-      });
+    // Cast receivers don't restore from local storage - state comes from sender
+    this.isDirty = false;
+    this.throwAwayRestoreState = false;
+    if (onConstructedCallback) {
+      onConstructedCallback(this.currState);
+    }
   };
 
   // Set dirty flag and save the current game state.
