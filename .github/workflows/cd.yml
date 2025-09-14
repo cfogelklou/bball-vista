@@ -7,6 +7,7 @@ on:
       - 'devel'
       - 'main'
       - 'master'
+      - 'ballercast'
     tags:
       - '*' # Test all pushed tags
 
@@ -39,18 +40,23 @@ jobs:
       with:
         submodules: 'recursive'
 
-    - name: Setup Node.js 16
+    - name: Setup Node.js 20
       uses: actions/setup-node@v3
       with:
-        node-version: "16"
+        node-version: "20"
+
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v1
+      with:
+        bun-version: latest
 
     - name: install and build
       run: |
-        npm ci --legacy-peer-deps
-        SKIP_PREFLIGHT_CHECK=true npm run build
+        bun install
+        bun run build
 
     - name: Upload
-      if: github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
+      if: github.event_name == 'push' && (github.ref == 'refs/heads/ballercast' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
       run: |
         echo "$ID_RSA_PRIV" > id_rsa_sftp
         echo "$ID_RSA_PUB" > id_rsa_sftp.pub
