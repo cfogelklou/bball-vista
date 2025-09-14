@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { Themes } from '../themes/themes';
 import { Score } from '../components/score';
 import { Clock } from '../components/clock';
-import { FontAwesome } from '../components/vector-icons';
 import deepEqual from 'deep-equal';
 import {
   BballGameState,
@@ -86,12 +85,10 @@ export const Scoreboard = (props: ScoreboardProps) => {
                   setCaretSize(size * 0.7);
                 }}
               >
-                <FontAwesome
-                  name='caret-left'
-                  color={homePossColor}
-                  size={caretSize}
-                  style={{ alignSelf: 'flex-start' }}
-                />
+                {/* Temporarily replaced FontAwesome with text */}
+                <View style={{ alignSelf: 'flex-start' }}>
+                  <Text style={{ color: homePossColor, fontSize: caretSize }}>◀</Text>
+                </View>
               </View>
 
               <Score
@@ -103,12 +100,10 @@ export const Scoreboard = (props: ScoreboardProps) => {
               <View
                 style={styles.possessionArrowView}
               >
-                <FontAwesome
-                  name='caret-right'
-                  color={awayPossColor}
-                  size={caretSize}
-                  style={{ alignSelf: 'flex-end' }}
-                />
+                {/* Temporarily replaced FontAwesome with text */}
+                <View style={{ alignSelf: 'flex-end' }}>
+                  <Text style={{ color: awayPossColor, fontSize: caretSize }}>▶</Text>
+                </View>
               </View>
             </View>
           </View>
