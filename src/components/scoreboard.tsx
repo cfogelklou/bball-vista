@@ -16,23 +16,6 @@ export type ScoreboardProps = {
   width: number;
   height: number;
   gameState: BballGameState;
-  onHomeScorePress?: (rightSide: boolean) => void;
-  onHomeScoreLongPress?: (rightSide: boolean) => void;
-  onAwayScorePress?: (rightSide: boolean) => void;
-  onAwayScoreLongPress?: (rightSide: boolean) => void;
-  onHomeFoulsPress?: (rightSide: boolean) => void;
-  onHomeFoulsLongPress?: (rightSide: boolean) => void;
-  onAwayFoulsPress?: (rightSide: boolean) => void;
-  onAwayFoulsLongPress?: (rightSide: boolean) => void;
-  onPeriodPress?: (rightSide: boolean) => void;
-  onPeriodLongPress?: (rightSide: boolean) => void;
-  onClockPress?: (rightSide: boolean) => void;
-  onClockLongPress?: (rightSide: boolean) => void;
-  onShotClockPress?: (rightSide: boolean) => void;
-  onShotClockLongPress?: (rightSide: boolean) => void;
-  onShotClockPressIn?: (rightSide: boolean) => void;
-  onShotClockPressOut?: (rightSide: boolean) => void;
-  onPossessionArrow?: (rightSide: boolean) => void;
 };
 
 const GOLDEN_RATIO = 1600 / 900; // Golden ratio
@@ -70,11 +53,6 @@ export const Scoreboard = (props: ScoreboardProps) => {
     windowResized(props.width, props.height);
   }
 
-  function handleOnPress(rightSide: boolean, fn?: (rightSide: boolean) => void) {
-    if (fn) {
-      fn(rightSide);
-    }
-  }
 
   const bonusAway = gameState.homeFouls >= 5 ? 'BONUS' : '';
   const bonusHome = gameState.awayFouls >= 5 ? 'BONUS' : '';
@@ -89,18 +67,6 @@ export const Scoreboard = (props: ScoreboardProps) => {
             title={'home'}
             score={gameState.homePoints}
             color='green'
-            onPressRight={() => {
-              handleOnPress(true, props.onHomeScorePress);
-            }}
-            onPressLeft={() => {
-              handleOnPress(false, props.onHomeScorePress);
-            }}
-            onLongPressRight={() => {
-              handleOnPress(true, props.onHomeScoreLongPress);
-            }}
-            onLongPressLeft={() => {
-              handleOnPress(false, props.onHomeScoreLongPress);
-            }}
           ></Score>
         </View>
         <View style={{ flex: GOLDEN_RATIO }}>
@@ -108,31 +74,16 @@ export const Scoreboard = (props: ScoreboardProps) => {
             <Clock
               clock={getClockString(gameState.clockMs)}
               color={'red'}
-              onPressRight={() => {
-                handleOnPress(true, props.onClockPress);
-              }}
-              onPressLeft={() => {
-                handleOnPress(false, props.onClockPress);
-              }}
-              onLongPressRight={() => {
-                handleOnPress(true, props.onClockLongPress);
-              }}
-              onLongPressLeft={() => {
-                handleOnPress(false, props.onClockLongPress);
-              }}
             ></Clock>
           </View>
           <View style={{ flex: 1 }}>
             <View style={{ height: '100%', flexDirection: 'row' }}>
-              <TouchableOpacity
+              <View
                 style={styles.possessionArrowView}
                 onLayout={(a: any) => {
                   console.log('Got layout:', a.nativeEvent.layout);
                   const size = Math.min(a.nativeEvent.layout.width, a.nativeEvent.layout.height);
                   setCaretSize(size * 0.7);
-                }}
-                onPress={() => {
-                  handleOnPress(false, props.onPossessionArrow);
                 }}
               >
                 <FontAwesome
@@ -141,31 +92,16 @@ export const Scoreboard = (props: ScoreboardProps) => {
                   size={caretSize}
                   style={{ alignSelf: 'flex-start' }}
                 />
-              </TouchableOpacity>
+              </View>
 
               <Score
                 title={'period'}
                 score={gameState.period}
                 color='red'
                 isHorizontal={true}
-                onPressRight={() => {
-                  handleOnPress(true, props.onPeriodPress);
-                }}
-                onPressLeft={() => {
-                  handleOnPress(false, props.onPeriodPress);
-                }}
-                onLongPressRight={() => {
-                  handleOnPress(true, props.onPeriodLongPress);
-                }}
-                onLongPressLeft={() => {
-                  handleOnPress(false, props.onPeriodLongPress);
-                }}
               ></Score>
-              <TouchableOpacity
+              <View
                 style={styles.possessionArrowView}
-                onPress={() => {
-                  handleOnPress(true, props.onPossessionArrow);
-                }}
               >
                 <FontAwesome
                   name='caret-right'
@@ -173,7 +109,7 @@ export const Scoreboard = (props: ScoreboardProps) => {
                   size={caretSize}
                   style={{ alignSelf: 'flex-end' }}
                 />
-              </TouchableOpacity>
+              </View>
             </View>
           </View>
         </View>
@@ -182,18 +118,6 @@ export const Scoreboard = (props: ScoreboardProps) => {
             title={'away'}
             score={gameState.awayPoints}
             color='green'
-            onPressRight={() => {
-              handleOnPress(true, props.onAwayScorePress);
-            }}
-            onPressLeft={() => {
-              handleOnPress(false, props.onAwayScorePress);
-            }}
-            onLongPressRight={() => {
-              handleOnPress(true, props.onAwayScoreLongPress);
-            }}
-            onLongPressLeft={() => {
-              handleOnPress(false, props.onAwayScoreLongPress);
-            }}
           ></Score>
         </View>
       </View>
@@ -206,18 +130,6 @@ export const Scoreboard = (props: ScoreboardProps) => {
             score={gameState.homeFouls}
             color='yellow'
             subtitle={bonusHome}
-            onPressRight={() => {
-              handleOnPress(true, props.onHomeFoulsPress);
-            }}
-            onPressLeft={() => {
-              handleOnPress(false, props.onHomeFoulsPress);
-            }}
-            onLongPressRight={() => {
-              handleOnPress(true, props.onHomeFoulsLongPress);
-            }}
-            onLongPressLeft={() => {
-              handleOnPress(false, props.onHomeFoulsLongPress);
-            }}
           ></Score>
         </View>
         <View style={styles.foulsAndShotClockRow}>
@@ -225,24 +137,6 @@ export const Scoreboard = (props: ScoreboardProps) => {
             title={'shot'}
             scoreText={getShotClockString(gameState.shotClockMs)}
             color='red'
-            onPressRight={() => {
-              handleOnPress(true, props.onShotClockPress);
-            }}
-            onPressLeft={() => {
-              handleOnPress(false, props.onShotClockPress);
-            }}
-            onLongPressRight={() => {
-              handleOnPress(true, props.onShotClockLongPress);
-            }}
-            onLongPressLeft={() => {
-              handleOnPress(false, props.onShotClockLongPress);
-            }}
-            onPressIn={(rightSide: boolean) => {
-              handleOnPress(rightSide, props.onShotClockPressIn);
-            }}
-            onPressOut={(rightSide: boolean) => {
-              handleOnPress(rightSide, props.onShotClockPressOut);
-            }}
           ></Score>
         </View>
         <View style={styles.foulsAndShotClockRow}>
@@ -251,18 +145,6 @@ export const Scoreboard = (props: ScoreboardProps) => {
             subtitle={bonusAway}
             score={gameState.awayFouls}
             color='yellow'
-            onPressRight={() => {
-              handleOnPress(true, props.onAwayFoulsPress);
-            }}
-            onPressLeft={() => {
-              handleOnPress(false, props.onAwayFoulsPress);
-            }}
-            onLongPressRight={() => {
-              handleOnPress(true, props.onAwayFoulsLongPress);
-            }}
-            onLongPressLeft={() => {
-              handleOnPress(false, props.onAwayFoulsLongPress);
-            }}
           ></Score>
         </View>
       </View>

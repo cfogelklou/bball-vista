@@ -1,21 +1,11 @@
 import './index.css';
 import React from 'react';
 import ReactDOM from 'react-dom';
-
+import { Bball } from './screens/bball';
 import * as serviceWorker from './serviceWorker';
-import { createBrowserHistory } from 'history';
-import { Router } from 'react-router-dom';
-import Routes from './routes/routes';
-import WebNavigator from './web/web_navigator';
-
-const history = createBrowserHistory();
-const navigation = WebNavigator.getInst();
-navigation.setHistory(history);
 
 ReactDOM.render(
-  <Router history={history}>
-    <Routes />
-  </Router>,
+  <Bball />,
   document.getElementById('root'),
 );
 

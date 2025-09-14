@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Text } from 'react-native';
 import { Themes } from '../themes/themes';
 
 export type ScoreProps = {
@@ -12,12 +12,6 @@ export type ScoreProps = {
   color?: string;
   isHorizontal?: boolean;
   subtitle?: string;
-  onPressRight?: () => void;
-  onPressLeft?: () => void;
-  onLongPressRight?: () => void;
-  onLongPressLeft?: () => void;
-  onPressIn?: (rightSide: boolean) => void;
-  onPressOut?: (rightSide: boolean) => void;
 };
 
 export const Score = (props: ScoreProps) => {
@@ -29,28 +23,13 @@ export const Score = (props: ScoreProps) => {
   const [titleSize, setTitleSize] = useState(1);
   const [subTitleSize, setSubTitleSize] = useState(1);
   const [fontSize, setFontSize] = useState(1);
-  const [width, setWidth] = useState(1);
-  const [height, setHeight] = useState(1);
   const [margin, setMargin] = useState(1);
 
-  function handleOnPress(cb?: () => void) {
-    if (cb) {
-      cb();
-    }
-  }
 
-  function handleOnPressInOut(rightSide: boolean, cb?: (rightSide: boolean) => void) {
-    if (cb) {
-      cb(rightSide);
-    }
-  }
-
-  const calculateSizes = (width: number, height: number, isHorizontal?: boolean) => {
+  const calculateSizes = (_width: number, height: number, isHorizontal?: boolean) => {
     const multiply = isHorizontal ? 2 : 1;
     setTitleSize(height * 0.15 * multiply);
     setFontSize(height * 0.4 * multiply);
-    setWidth(width);
-    setHeight(height);
     setMargin(height * 0.05 * multiply);
     setSubTitleSize(height * 0.1 * multiply);
   };
@@ -76,50 +55,6 @@ export const Score = (props: ScoreProps) => {
             {props.subtitle}
           </Text>
         </View>
-        <TouchableOpacity
-          onPress={() => {
-            console.log('onPressLeft');
-            handleOnPress(props.onPressLeft);
-          }}
-          onLongPress={() => {
-            handleOnPress(props.onLongPressLeft);
-          }}
-          onPressIn={() => {
-            handleOnPressInOut(false, props.onPressIn);
-          }}
-          onPressOut={() => {
-            handleOnPressInOut(false, props.onPressOut);
-          }}
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: width / 2,
-            height: height,
-          }}
-        ></TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => {
-            console.log('onPressRight');
-            handleOnPress(props.onPressRight);
-          }}
-          onLongPress={() => {
-            handleOnPress(props.onLongPressRight);
-          }}
-          onPressIn={() => {
-            handleOnPressInOut(true, props.onPressIn);
-          }}
-          onPressOut={() => {
-            handleOnPressInOut(true, props.onPressOut);
-          }}
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: width / 2,
-            width: width / 2,
-            height: height,
-          }}
-        ></TouchableOpacity>
       </View>
     </>
   );

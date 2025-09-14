@@ -1,16 +1,12 @@
 import React, { useState } from 'react';
 
-import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Text } from 'react-native';
 import { Themes } from '../themes/themes';
 
 export type ClockProps = {
   containerStyle?: any;
   clock: string;
   color?: string;
-  onPressRight?: () => void;
-  onPressLeft?: () => void;
-  onLongPressRight?: () => void;
-  onLongPressLeft?: () => void;
 };
 
 type ClockDimensions = {
@@ -28,19 +24,6 @@ export const Clock = (props: ClockProps) => {
   const [height, setHeight] = useState(1);
   const [margin, setMargin] = useState(1);
 
-  const onPress = (isLeft: boolean) => {
-    const cb = isLeft ? props.onPressLeft : props.onPressRight;
-    if (cb) {
-      cb();
-    }
-  };
-
-  const onLongPress = (isLeft: boolean) => {
-    const cb = isLeft ? props.onLongPressLeft : props.onLongPressRight;
-    if (cb) {
-      cb();
-    }
-  };
 
   const calculateSizes = (width: number, height: number) => {
     setFontSize(height * 0.5);
@@ -65,36 +48,6 @@ export const Clock = (props: ClockProps) => {
           </View>
         </View>
       </View>
-      <TouchableOpacity
-        onPress={() => {
-          onPress(false);
-        }}
-        onLongPress={() => {
-          onLongPress(false);
-        }}
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: width / 2,
-          height: height,
-        }}
-      ></TouchableOpacity>
-      <TouchableOpacity
-        onPress={() => {
-          onPress(true);
-        }}
-        onLongPress={() => {
-          onLongPress(true);
-        }}
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: width / 2,
-          width: width / 2,
-          height: height,
-        }}
-      ></TouchableOpacity>
     </>
   );
 };
