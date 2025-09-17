@@ -2,6 +2,7 @@ import React from 'react';
 import { View, StyleSheet, Dimensions } from 'react-native';
 import { Themes } from '../themes/themes';
 import { Scoreboard } from '../components/scoreboard';
+import { GameIdDisplay } from '../components/gameIdDisplay';
 import { GameState, createDefaultGameState, getCurrentClockTime } from '../types/gameState';
 import deepEqual from 'deep-equal';
 import { Howl, Howler } from 'howler';
@@ -124,6 +125,10 @@ export class Bball extends React.Component {
           width={dim.width}
           height={dim.height}
           gameState={this.state.gameState}
+        />
+        <GameIdDisplay
+          gameId={this.castReceiver.getGameId()}
+          sessionUuid={this.castReceiver.getSessionUuid()}
         />
       </View>
     );

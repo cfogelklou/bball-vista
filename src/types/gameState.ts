@@ -20,6 +20,9 @@ export interface GameState {
   // This is a randomized UUID, created when the user selects to create a new game
   sessionUuid: string;
 
+  // 6-character game ID for easy reference (optional for backward compatibility)
+  gameId?: string;
+
   // Timestamp, in UTC milliseconds, of when this gamestate was created. Used to delete old sessions
   timestampUtcGameStartedMs: number;
 

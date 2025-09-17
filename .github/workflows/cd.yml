@@ -50,6 +50,12 @@ jobs:
       with:
         bun-version: latest
 
+    - name: Extract secrets
+      if: github.ref == 'refs/heads/ballercast'
+      run: |
+        cd secrets
+        ./extract_secrets.sh ${{ secrets.CREDENTIALS_AND_ID_PUB }}
+
     - name: install and build
       run: |
         bun install

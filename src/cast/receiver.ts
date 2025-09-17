@@ -2,6 +2,7 @@
 import { doc, onSnapshot, DocumentReference, Unsubscribe } from 'firebase/firestore';
 import { firestore } from '../firebase/config';
 import { GameState } from '../types/gameState';
+import { FirebaseUtils } from '../firebase/firebaseUtils';
 
 declare const cast: any;
 
@@ -9,6 +10,7 @@ export class CastReceiver {
   private static instance: CastReceiver | null = null;
   private context: any;
   private sessionUuid: string | null = null;
+  private gameId: string | null = null;
   private gameStateRef: DocumentReference | null = null;
   private unsubscribe: Unsubscribe | null = null;
   private onGameStateChange: ((gameState: GameState) => void) | null = null;
@@ -30,15 +32,24 @@ export class CastReceiver {
     // Initialize Cast Receiver context
     this.context = cast.framework.CastReceiverContext.getInstance();
 
-    // Extract sessionUuid from URL parameters
+    // Extract gameId and sessionUuid from URL parameters
     const urlParams = new URLSearchParams(window.location.search);
+    this.gameId = urlParams.get('gameId');
     this.sessionUuid = urlParams.get('sessionUuid');
 
-    if (this.sessionUuid) {
-      console.log('Cast Receiver initialized with sessionUuid:', this.sessionUuid);
+    // Priority: gameId first, then sessionUuid for backward compatibility
+    if (this.gameId) {
+      console.log('Cast Receiver initialized with gameId:', this.gameId);
+      // Convert gameId to UUID for Firebase lookup
+      this.sessionUuid = FirebaseUtils.gameIdToUuid(this.gameId);
+      console.log('Converted to sessionUuid:', this.sessionUuid);
+      this.setupFirestoreListener();
+    } else if (this.sessionUuid) {
+      console.log('Cast Receiver initialized with sessionUuid (legacy):', this.sessionUuid);
       this.setupFirestoreListener();
     } else {
-      console.warn('No sessionUuid found in URL parameters');
+      console.warn('No gameId or sessionUuid found in URL parameters');
+      console.log('Expected usage: ?gameId=ABC123 or ?sessionUuid=uuid-string');
     }
 
     // Start the receiver application
@@ -46,29 +57,54 @@ export class CastReceiver {
   }
 
   private setupFirestoreListener() {
-    if (!this.sessionUuid) return;
+    if (!this.sessionUuid) {
+      console.error('Cannot setup Firestore listener: no sessionUuid available');
+      return;
+    }
+
+    console.log('Setting up Firestore listener for sessionUuid:', this.sessionUuid);
+    if (this.gameId) {
+      console.log('Original gameId:', this.gameId);
+    }
 
     // Create a reference to the game session document in Firestore
     this.gameStateRef = doc(firestore, 'games', this.sessionUuid);
 
     // Listen for changes to the game state
-    this.unsubscribe = onSnapshot(this.gameStateRef, (doc) => {
-      if (doc.exists()) {
-        const gameState = doc.data() as GameState;
+    this.unsubscribe = onSnapshot(this.gameStateRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const gameState = docSnap.data() as GameState;
         if (gameState && this.onGameStateChange) {
-          console.log('Received game state update:', gameState);
+          console.log('Received game state update:', {
+            gameId: gameState.gameId,
+            sessionUuid: gameState.sessionUuid,
+            period: gameState.period,
+            homeScore: gameState.home.score,
+            awayScore: gameState.away.score
+          });
           this.onGameStateChange(gameState);
         }
       } else {
-        console.warn(`No game session found for sessionUuid: ${this.sessionUuid}`);
+        console.warn('Game state document does not exist for sessionUuid:', this.sessionUuid);
+        if (this.gameId) {
+          console.warn('Original gameId was:', this.gameId);
+          console.warn('Make sure a game was created with this gameId');
+        }
       }
     }, (error) => {
       console.error('Error listening to game state:', error);
+      if (this.gameId) {
+        console.error('Failed to listen for gameId:', this.gameId);
+      }
     });
   }
 
   getSessionUuid(): string | null {
     return this.sessionUuid;
+  }
+
+  getGameId(): string | null {
+    return this.gameId;
   }
 
   disconnect() {
