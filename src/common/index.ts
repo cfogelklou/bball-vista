@@ -6,7 +6,6 @@
  */
 
 // Types
-export * from '@common/types/gameState';
 
 // Re-export common types for convenience
 export type {
