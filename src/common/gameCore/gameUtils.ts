@@ -33,13 +33,24 @@ function hashGameIdToUuid(gameId: string): string {
   const positiveHash = Math.abs(hash);
   const hashStr = positiveHash.toString(16).padStart(8, '0');
 
+  // To get 12 hex characters for the last segment, hash again with a different seed
+  let hash2 = 5381;
+  for (let i = 0; i < gameId.length; i++) {
+    hash2 = ((hash2 << 5) + hash2) + gameId.charCodeAt(i);
+    hash2 = hash2 & hash2;
+  }
+  const positiveHash2 = Math.abs(hash2);
+  const hashStr2 = positiveHash2.toString(16).padStart(8, '0');
+  // Concatenate both hashes to get at least 16 hex digits, then use 12 for the last segment
+  const lastSegment = (hashStr + hashStr2).substring(0, 12);
+
   // Create a deterministic UUID from the hash
   const uuid = [
     hashStr.substring(0, 8),
     hashStr.substring(0, 4),
     '4' + hashStr.substring(1, 4), // Version 4 UUID
     '8' + hashStr.substring(1, 4), // Variant bits
-    hashStr.substring(0, 12)
+    lastSegment
   ].join('-');
 
   return uuid;
