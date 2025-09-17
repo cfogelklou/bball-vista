@@ -4,7 +4,7 @@ import { Themes } from '../themes/themes';
 import { Score } from '../components/score';
 import { Clock } from '../components/clock';
 import deepEqual from 'deep-equal';
-import { GameState, createDefaultGameState } from '../types/gameState';
+import { GameState, createDefaultGameState } from '@common/types/gameState';
 
 // Helper functions for formatting display values
 function formatTime(ms: number): string {

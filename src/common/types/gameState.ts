@@ -1,6 +1,8 @@
 /**
  * GameState TypeScript interfaces for BallerCast
  * Based on PRD specification v1.4
+ *
+ * @package @ballercast/shared-core
  */
 
 export interface TeamState {

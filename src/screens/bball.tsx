@@ -3,7 +3,7 @@ import { View, StyleSheet, Dimensions } from 'react-native';
 import { Themes } from '../themes/themes';
 import { Scoreboard } from '../components/scoreboard';
 import { GameIdDisplay } from '../components/gameIdDisplay';
-import { GameState, createDefaultGameState, getCurrentClockTime } from '../types/gameState';
+import { GameState, createDefaultGameState, getCurrentClockTime } from '@common/types/gameState';
 import deepEqual from 'deep-equal';
 import { Howl, Howler } from 'howler';
 import CastReceiver from '../cast/receiver';

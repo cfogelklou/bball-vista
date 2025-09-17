@@ -7,7 +7,8 @@ export default defineConfig({
   base: '/ballercast-rx/',
   resolve: {
     alias: {
-      'react-native': 'react-native-web'
+      'react-native': 'react-native-web',
+      '@common': '/Volumes/Projects/dev/ballercast/src/sharedSrc/receiver/src/common'
     }
   }
 })

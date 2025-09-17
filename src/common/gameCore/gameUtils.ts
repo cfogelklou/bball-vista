@@ -1,8 +1,11 @@
 /**
- * Firebase Firestore utility functions for BallerCast Web App
+ * Cross-platform game utilities for BallerCast
+ * Contains game ID generation, UUID conversion, and core game logic
+ * @package @ballercast/shared-core
  */
 
 import {
+  getFirestore,
   collection,
   doc,
   getDoc,
@@ -14,7 +17,7 @@ import {
   limit,
   serverTimestamp
 } from 'firebase/firestore';
-import { firestore } from './config';
+import { FirebaseApp } from 'firebase/app';
 import { GameState, createDefaultGameState } from '@common/types/gameState';
 
 // Simple hash function to convert gameID to UUID
@@ -42,14 +45,37 @@ function hashGameIdToUuid(gameId: string): string {
   return uuid;
 }
 
-export class FirebaseUtils {
+export interface FirebaseUtilsConfig {
+  app: FirebaseApp;
+}
+
+export class GameUtils {
+  private static config: FirebaseUtilsConfig | null = null;
+
+  /**
+   * Initialize Firebase utils with app instance
+   */
+  static initialize(config: FirebaseUtilsConfig) {
+    this.config = config;
+  }
+
+  /**
+   * Get the initialized Firestore instance
+   */
+  private static getFirestore() {
+    if (!this.config) {
+      throw new Error('FirebaseUtils not initialized. Call FirebaseUtils.initialize() first.');
+    }
+    return getFirestore(this.config.app);
+  }
+
   /**
    * Test Firebase connection by attempting to read from Firestore
    */
   static async testConnection(): Promise<{ success: boolean; error?: string }> {
     try {
-      // Use the new modular API for Firebase operations
-      const testCollection = collection(firestore, 'test');
+      const db = this.getFirestore();
+      const testCollection = collection(db, 'test');
       const q = query(testCollection, limit(1));
       await getDocs(q);
 
@@ -103,11 +129,13 @@ export class FirebaseUtils {
    */
   static async createGameSession(gameId?: string) {
     try {
+      const db = this.getFirestore();
+
       // Generate gameID if not provided
       const sessionGameId = gameId || this.generateGameId();
       const sessionUuid = this.gameIdToUuid(sessionGameId);
 
-      const gameRef = doc(firestore, 'games', sessionUuid);
+      const gameRef = doc(db, 'games', sessionUuid);
 
       // Create a default game state using the new interface
       const defaultGameState = createDefaultGameState(sessionUuid);
@@ -134,7 +162,8 @@ export class FirebaseUtils {
    */
   static async updateGameState(sessionUuid: string, gameState: Partial<GameState>) {
     try {
-      const gameRef = doc(firestore, 'games', sessionUuid);
+      const db = this.getFirestore();
+      const gameRef = doc(db, 'games', sessionUuid);
 
       await updateDoc(gameRef, {
         ...gameState,
@@ -155,11 +184,12 @@ export class FirebaseUtils {
    * Listen to game state changes
    */
   static subscribeToGameState(sessionUuid: string, callback: (gameState: GameState) => void) {
-    const gameRef = doc(firestore, 'games', sessionUuid);
+    const db = this.getFirestore();
+    const gameRef = doc(db, 'games', sessionUuid);
 
-    return onSnapshot(gameRef, (docSnap) => {
-      if (docSnap.exists()) {
-        const gameState = docSnap.data() as GameState;
+    return onSnapshot(gameRef, (doc) => {
+      if (doc.exists()) {
+        const gameState = doc.data() as GameState;
         callback(gameState);
       }
     }, (error) => {
@@ -172,7 +202,8 @@ export class FirebaseUtils {
    */
   static async getGameState(sessionUuid: string) {
     try {
-      const gameRef = doc(firestore, 'games', sessionUuid);
+      const db = this.getFirestore();
+      const gameRef = doc(db, 'games', sessionUuid);
       const docSnap = await getDoc(gameRef);
 
       if (docSnap.exists()) {

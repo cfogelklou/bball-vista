@@ -157,27 +157,11 @@ class BballGame {
   }
 }
 
-export type BballGameState = {
-  homePoints: number;
-  awayPoints: number;
-  homeFouls: number;
-  awayFouls: number;
-  clockMs: number;
-  shotClockMs: number;
-  period: number;
-  possessionHome: boolean;
-};
+import { GameState, createDefaultGameState } from '@common/types/gameState';
 
-export const defaultGameState: BballGameState = {
-  homePoints: 0,
-  awayPoints: 0,
-  homeFouls: 0,
-  awayFouls: 0,
-  clockMs: 10 * 60 * 1000,
-  shotClockMs: 24 * 1000,
-  period: 0,
-  possessionHome: true,
-};
+export type BballGameState = GameState;
+
+export const defaultGameState: BballGameState = createDefaultGameState('temp-session');
 
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -235,12 +219,27 @@ export class BballLogic {
   getState(): BballGameState {
     this.game.updateClock();
     const gameState: BballGameState = {
-      homePoints: this.game.homeTeam.points,
-      awayPoints: this.game.awayTeam.points,
-      homeFouls: this.game.homeTeam.fouls,
-      awayFouls: this.game.awayTeam.fouls,
-      clockMs: this.game.clockMs,
-      shotClockMs: this.game.shotClockMs,
+      sessionUuid: this.currState.sessionUuid, // This should be set from the session
+      gameId: this.currState.gameId, // This should be set from the session
+      timestampUtcGameStartedMs: this.currState.timestampUtcGameStartedMs, // This should be set from the session
+      periodClock: {
+        timestampUtcStarted: this.game.clockStartTime,
+        msRemaining: this.game.clockMs,
+      },
+      shotClock: {
+        timestampUtcStarted: this.game.clockStartTime, // Assuming shot clock runs with game clock
+        msRemaining: this.game.shotClockMs,
+      },
+      home: {
+        score: this.game.homeTeam.points,
+        fouls: this.game.homeTeam.fouls,
+        timeouts: 0, // Not tracked in BballGame
+      },
+      away: {
+        score: this.game.awayTeam.points,
+        fouls: this.game.awayTeam.fouls,
+        timeouts: 0, // Not tracked in BballGame
+      },
       period: this.game.period,
       possessionHome: this.game.possessionHome,
     };
