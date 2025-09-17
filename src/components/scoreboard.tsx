@@ -4,17 +4,45 @@ import { Themes } from '../themes/themes';
 import { Score } from '../components/score';
 import { Clock } from '../components/clock';
 import deepEqual from 'deep-equal';
-import {
-  BballGameState,
-  defaultGameState,
-  getClockString,
-  getShotClockString,
-} from '../bball_logic';
+import { GameState, createDefaultGameState } from '../types/gameState';
+
+// Helper functions for formatting display values
+function formatTime(ms: number): string {
+  if (isNaN(ms) || ms < 0) return "0:00";
+
+  const totalSeconds = Math.ceil(ms / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+
+  if (minutes > 0) {
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  } else {
+    return `${seconds}`;
+  }
+}
+
+function getMainClockDisplay(gameState: GameState): string {
+  // Default to 10 minutes if no valid clock data
+  const defaultMs = 10 * 60 * 1000; // 10 minutes
+  if (!gameState.periodClock || gameState.periodClock.msRemaining === undefined) {
+    return formatTime(defaultMs);
+  }
+  return formatTime(gameState.periodClock.msRemaining);
+}
+
+function getShotClockDisplay(gameState: GameState): string {
+  // Default to 24 seconds if no valid clock data
+  const defaultMs = 24 * 1000; // 24 seconds
+  if (!gameState.shotClock || gameState.shotClock.msRemaining === undefined) {
+    return formatTime(defaultMs);
+  }
+  return formatTime(gameState.shotClock.msRemaining);
+}
 
 export type ScoreboardProps = {
   width: number;
   height: number;
-  gameState: BballGameState;
+  gameState: GameState;
 };
 
 const GOLDEN_RATIO = 1600 / 900; // Golden ratio
@@ -25,7 +53,7 @@ export const Scoreboard = (props: ScoreboardProps) => {
   const [caretSize, setCaretSize] = useState(1.0);
   const [scoreboardWidth, setScoreboardWidth] = useState(1.0);
   const [scoreboardHeight, setScoreboardHeight] = useState(1.0);
-  const [gameState, setGameState] = useState<BballGameState>(defaultGameState);
+  const [gameState, setGameState] = useState<GameState>(createDefaultGameState('temp'));
 
   //if (gameState != props.gameState) {
   if (!deepEqual(gameState, props.gameState)) {
@@ -53,8 +81,8 @@ export const Scoreboard = (props: ScoreboardProps) => {
   }
 
 
-  const bonusAway = gameState.homeFouls >= 5 ? 'BONUS' : '';
-  const bonusHome = gameState.awayFouls >= 5 ? 'BONUS' : '';
+  const bonusAway = gameState.home?.fouls >= 5 ? 'BONUS' : '';
+  const bonusHome = gameState.away?.fouls >= 5 ? 'BONUS' : '';
   const homePossColor = gameState.possessionHome ? 'red' : Themes.colors.dark_grey;
   const awayPossColor = !gameState.possessionHome ? 'red' : Themes.colors.dark_grey;
 
@@ -64,14 +92,14 @@ export const Scoreboard = (props: ScoreboardProps) => {
         <View style={styles.scoreAndBonus}>
           <Score
             title={'home'}
-            score={gameState.homePoints}
+            score={gameState.home?.score || 0}
             color='green'
           ></Score>
         </View>
         <View style={{ flex: GOLDEN_RATIO }}>
           <View style={{ flex: 2 }}>
             <Clock
-              clock={getClockString(gameState.clockMs)}
+              clock={getMainClockDisplay(gameState)}
               color={'red'}
             ></Clock>
           </View>
@@ -111,7 +139,7 @@ export const Scoreboard = (props: ScoreboardProps) => {
         <View style={styles.scoreAndBonus}>
           <Score
             title={'away'}
-            score={gameState.awayPoints}
+            score={gameState.away?.score || 0}
             color='green'
           ></Score>
         </View>
@@ -122,7 +150,7 @@ export const Scoreboard = (props: ScoreboardProps) => {
         <View style={styles.foulsAndShotClockRow}>
           <Score
             title={'fouls'}
-            score={gameState.homeFouls}
+            score={gameState.home?.fouls || 0}
             color='yellow'
             subtitle={bonusHome}
           ></Score>
@@ -130,7 +158,7 @@ export const Scoreboard = (props: ScoreboardProps) => {
         <View style={styles.foulsAndShotClockRow}>
           <Score
             title={'shot'}
-            scoreText={getShotClockString(gameState.shotClockMs)}
+            scoreText={getShotClockDisplay(gameState)}
             color='red'
           ></Score>
         </View>
@@ -138,7 +166,7 @@ export const Scoreboard = (props: ScoreboardProps) => {
           <Score
             title={'fouls'}
             subtitle={bonusAway}
-            score={gameState.awayFouls}
+            score={gameState.away?.fouls || 0}
             color='yellow'
           ></Score>
         </View>
