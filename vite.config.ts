@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { resolve } from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -8,7 +9,7 @@ export default defineConfig({
   resolve: {
     alias: {
       'react-native': 'react-native-web',
-      '@common': '/Volumes/Projects/dev/ballercast/src/sharedSrc/receiver/src/common'
+      '@common': resolve(__dirname, 'src/common')
     }
   }
 })

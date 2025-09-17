@@ -23,8 +23,8 @@ echo "Extracting $ARCHIVE..."
 
 # Check if extraction was successful
 if [ $? -eq 0 ]; then
-    echo "Extraction completed successfully. Copying google-services.json to app directory."
-    cp config.ts ../src/firebase/config.ts
+    echo "Extraction completed successfully. Moving config.ts to app directory."
+    mv config.ts ../src/firebase/
 else
     echo "Error: Extraction failed. Please check the password or archive integrity."
     exit 1
