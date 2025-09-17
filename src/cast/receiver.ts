@@ -1,16 +1,17 @@
 // Cast Receiver integration for BallerCast
-import { ref, onValue, DatabaseReference } from 'firebase/database';
-import { database } from '../firebase/config';
-import { BballGameState } from '../bball_logic';
+import { doc, onSnapshot, DocumentReference, Unsubscribe } from 'firebase/firestore';
+import { firestore } from '../firebase/config';
+import { GameState } from '../types/gameState';
 
 declare const cast: any;
 
 export class CastReceiver {
   private static instance: CastReceiver | null = null;
   private context: any;
-  private sessionId: string | null = null;
-  private gameStateRef: DatabaseReference | null = null;
-  private onGameStateChange: ((gameState: BballGameState) => void) | null = null;
+  private sessionUuid: string | null = null;
+  private gameStateRef: DocumentReference | null = null;
+  private unsubscribe: Unsubscribe | null = null;
+  private onGameStateChange: ((gameState: GameState) => void) | null = null;
 
   private constructor() {
     this.context = null;
@@ -23,54 +24,61 @@ export class CastReceiver {
     return CastReceiver.instance;
   }
 
-  initialize(onGameStateChange: (gameState: BballGameState) => void) {
+  initialize(onGameStateChange: (gameState: GameState) => void) {
     this.onGameStateChange = onGameStateChange;
 
     // Initialize Cast Receiver context
     this.context = cast.framework.CastReceiverContext.getInstance();
 
-    // Extract sessionId from URL parameters
+    // Extract sessionUuid from URL parameters
     const urlParams = new URLSearchParams(window.location.search);
-    this.sessionId = urlParams.get('sessionId');
+    this.sessionUuid = urlParams.get('sessionUuid');
 
-    if (this.sessionId) {
-      console.log('Cast Receiver initialized with sessionId:', this.sessionId);
-      this.setupFirebaseListener();
+    if (this.sessionUuid) {
+      console.log('Cast Receiver initialized with sessionUuid:', this.sessionUuid);
+      this.setupFirestoreListener();
     } else {
-      console.warn('No sessionId found in URL parameters');
+      console.warn('No sessionUuid found in URL parameters');
     }
 
     // Start the receiver application
     this.context.start();
   }
 
-  private setupFirebaseListener() {
-    if (!this.sessionId) return;
+  private setupFirestoreListener() {
+    if (!this.sessionUuid) return;
 
-    // Create a reference to the game session in Firebase
-    this.gameStateRef = ref(database, `sessions/${this.sessionId}`);
+    // Create a reference to the game session document in Firestore
+    this.gameStateRef = doc(firestore, 'games', this.sessionUuid);
 
     // Listen for changes to the game state
-    onValue(this.gameStateRef, (snapshot) => {
-      const gameState = snapshot.val();
-      if (gameState && this.onGameStateChange) {
-        console.log('Received game state update:', gameState);
-        this.onGameStateChange(gameState);
+    this.unsubscribe = onSnapshot(this.gameStateRef, (doc) => {
+      if (doc.exists()) {
+        const gameState = doc.data() as GameState;
+        if (gameState && this.onGameStateChange) {
+          console.log('Received game state update:', gameState);
+          this.onGameStateChange(gameState);
+        }
+      } else {
+        console.warn(`No game session found for sessionUuid: ${this.sessionUuid}`);
       }
+    }, (error) => {
+      console.error('Error listening to game state:', error);
     });
   }
 
-  getSessionId(): string | null {
-    return this.sessionId;
+  getSessionUuid(): string | null {
+    return this.sessionUuid;
   }
 
   disconnect() {
-    // Clean up Firebase listener
-    if (this.gameStateRef) {
-      // Note: with Firebase v9+, we don't need to manually unsubscribe
-      // as the onValue listener is automatically cleaned up
-      this.gameStateRef = null;
+    // Clean up Firestore listener
+    if (this.unsubscribe) {
+      this.unsubscribe();
+      this.unsubscribe = null;
     }
+
+    this.gameStateRef = null;
 
     // Stop the receiver context
     if (this.context) {

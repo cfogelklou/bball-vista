@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet, Dimensions } from 'react-native';
 import { Themes } from '../themes/themes';
 import { Scoreboard } from '../components/scoreboard';
-import { BballGameState, defaultGameState } from '../bball_logic';
+import { GameState, createDefaultGameState, getCurrentClockTime } from '../types/gameState';
 import deepEqual from 'deep-equal';
 import { Howl, Howler } from 'howler';
 import CastReceiver from '../cast/receiver';
@@ -14,7 +14,7 @@ export type BballProps = {
 };
 
 type BballState = {
-  gameState: BballGameState;
+  gameState: GameState;
 };
 
 Howler.volume(0.9);
@@ -49,17 +49,17 @@ export class Bball extends React.Component {
   private castReceiver = CastReceiver.getInstance();
 
   state: BballState = {
-    gameState: defaultGameState,
+    gameState: createDefaultGameState('temp-session'),
   };
 
   interval: undefined | NodeJS.Timeout = undefined;
-  private previousGameState: BballGameState = defaultGameState;
+  private previousGameState: GameState = createDefaultGameState('temp-session');
 
   constructor(props: any) {
     super(props);
   }
 
-  setGameStateIfChanged = (gamestate: BballGameState) => {
+  setGameStateIfChanged = (gamestate: GameState) => {
     if (!deepEqual(gamestate, this.state.gameState)) {
       this.setState({ gameState: { ...gamestate } });
     }
@@ -68,16 +68,23 @@ export class Bball extends React.Component {
   checkForSoundTriggers = () => {
     const currentState = this.state.gameState;
 
-    // Check for buzzer sound (clock reached 0)
-    if (currentState.clockMs <= 0) {
-      if (this.previousGameState.clockMs > 0) {
+    // Get current clock times using helper functions
+    const currentPeriodClockMs = getCurrentClockTime(currentState.periodClock);
+    const currentShotClockMs = getCurrentClockTime(currentState.shotClock);
+
+    const previousPeriodClockMs = getCurrentClockTime(this.previousGameState.periodClock);
+    const previousShotClockMs = getCurrentClockTime(this.previousGameState.shotClock);
+
+    // Check for buzzer sound (period clock reached 0)
+    if (currentPeriodClockMs <= 0) {
+      if (previousPeriodClockMs > 0) {
         buzzer.play();
       }
     }
 
     // Check for beeper sound (shot clock reached 0)
-    if (currentState.shotClockMs <= 0) {
-      if (this.previousGameState.shotClockMs > 0) {
+    if (currentShotClockMs <= 0) {
+      if (previousShotClockMs > 0) {
         beeper.play();
       }
     }
@@ -104,7 +111,7 @@ export class Bball extends React.Component {
     this.castReceiver.disconnect();
   }
 
-  handleGameStateChange = (gameState: BballGameState) => {
+  handleGameStateChange = (gameState: GameState) => {
     this.setGameStateIfChanged(gameState);
   };
 
