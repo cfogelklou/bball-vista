@@ -20,31 +20,32 @@ import {
 import { FirebaseApp } from 'firebase/app';
 import { GameState, createDefaultGameState } from '@common/types/gameState';
 
-// Simple hash function to convert gameID to UUID
-function hashGameIdToUuid(gameId: string): string {
+export function createDeterministicUuid(input: string, useDoubleHash: boolean = true): string {
   let hash = 0;
-  for (let i = 0; i < gameId.length; i++) {
-    const char = gameId.charCodeAt(i);
+  for (let i = 0; i < input.length; i++) {
+    const char = input.charCodeAt(i);
     hash = ((hash << 5) - hash) + char;
     hash = hash & hash; // Convert to 32bit integer
   }
 
-  // Convert hash to positive number and create UUID format
   const positiveHash = Math.abs(hash);
   const hashStr = positiveHash.toString(16).padStart(8, '0');
 
-  // To get 12 hex characters for the last segment, hash again with a different seed
-  let hash2 = 5381;
-  for (let i = 0; i < gameId.length; i++) {
-    hash2 = ((hash2 << 5) + hash2) + gameId.charCodeAt(i);
-    hash2 = hash2 & hash2;
-  }
-  const positiveHash2 = Math.abs(hash2);
-  const hashStr2 = positiveHash2.toString(16).padStart(8, '0');
-  // Concatenate both hashes to get at least 16 hex digits, then use 12 for the last segment
-  const lastSegment = (hashStr + hashStr2).substring(0, 12);
+  let lastSegment: string;
 
-  // Create a deterministic UUID from the hash
+  if (useDoubleHash) {
+    let hash2 = 5381;
+    for (let i = 0; i < input.length; i++) {
+      hash2 = ((hash2 << 5) + hash2) + input.charCodeAt(i);
+      hash2 = hash2 & hash2;
+    }
+    const positiveHash2 = Math.abs(hash2);
+    const hashStr2 = positiveHash2.toString(16).padStart(8, '0');
+    lastSegment = (hashStr + hashStr2).substring(0, 12);
+  } else {
+    lastSegment = hashStr.substring(0, 12);
+  }
+
   const uuid = [
     hashStr.substring(0, 8),
     hashStr.substring(0, 4),
@@ -54,6 +55,11 @@ function hashGameIdToUuid(gameId: string): string {
   ].join('-');
 
   return uuid;
+}
+
+// Simple hash function to convert gameID to UUID
+function hashGameIdToUuid(gameId: string): string {
+  return createDeterministicUuid(gameId, true);
 }
 
 export interface FirebaseUtilsConfig {
