@@ -1,16 +1,19 @@
 // Cast Receiver integration for BallerCast
-import { ref, onValue, DatabaseReference } from 'firebase/database';
-import { database } from '../firebase/config';
-import { BballGameState } from '../bball_logic';
+import { doc, onSnapshot, DocumentReference, Unsubscribe } from 'firebase/firestore';
+import { firestore } from '../firebase/config';
+import { GameState } from '@common/types/gameState';
+import { FirebaseUtils } from '../firebase/firebaseUtils';
 
 declare const cast: any;
 
 export class CastReceiver {
   private static instance: CastReceiver | null = null;
   private context: any;
-  private sessionId: string | null = null;
-  private gameStateRef: DatabaseReference | null = null;
-  private onGameStateChange: ((gameState: BballGameState) => void) | null = null;
+  private sessionUuid: string | null = null;
+  private gameId: string | null = null;
+  private gameStateRef: DocumentReference | null = null;
+  private unsubscribe: Unsubscribe | null = null;
+  private onGameStateChange: ((gameState: GameState) => void) | null = null;
 
   private constructor() {
     this.context = null;
@@ -23,54 +26,95 @@ export class CastReceiver {
     return CastReceiver.instance;
   }
 
-  initialize(onGameStateChange: (gameState: BballGameState) => void) {
+  initialize(onGameStateChange: (gameState: GameState) => void) {
     this.onGameStateChange = onGameStateChange;
 
     // Initialize Cast Receiver context
     this.context = cast.framework.CastReceiverContext.getInstance();
 
-    // Extract sessionId from URL parameters
+    // Extract gameId and sessionUuid from URL parameters
     const urlParams = new URLSearchParams(window.location.search);
-    this.sessionId = urlParams.get('sessionId');
+    this.gameId = urlParams.get('gameId');
+    this.sessionUuid = urlParams.get('sessionUuid');
 
-    if (this.sessionId) {
-      console.log('Cast Receiver initialized with sessionId:', this.sessionId);
-      this.setupFirebaseListener();
+    // Priority: gameId first, then sessionUuid for backward compatibility
+    if (this.gameId) {
+      console.log('Cast Receiver initialized with gameId:', this.gameId);
+      // Convert gameId to UUID for Firebase lookup
+      this.sessionUuid = FirebaseUtils.gameIdToUuid(this.gameId);
+      console.log('Converted to sessionUuid:', this.sessionUuid);
+      this.setupFirestoreListener();
+    } else if (this.sessionUuid) {
+      console.log('Cast Receiver initialized with sessionUuid (legacy):', this.sessionUuid);
+      this.setupFirestoreListener();
     } else {
-      console.warn('No sessionId found in URL parameters');
+      console.warn('No gameId or sessionUuid found in URL parameters');
+      console.log('Expected usage: ?gameId=ABC123 or ?sessionUuid=uuid-string');
     }
 
     // Start the receiver application
     this.context.start();
   }
 
-  private setupFirebaseListener() {
-    if (!this.sessionId) return;
+  private setupFirestoreListener() {
+    if (!this.sessionUuid) {
+      console.error('Cannot setup Firestore listener: no sessionUuid available');
+      return;
+    }
 
-    // Create a reference to the game session in Firebase
-    this.gameStateRef = ref(database, `sessions/${this.sessionId}`);
+    console.log('Setting up Firestore listener for sessionUuid:', this.sessionUuid);
+    if (this.gameId) {
+      console.log('Original gameId:', this.gameId);
+    }
+
+    // Create a reference to the game session document in Firestore
+    this.gameStateRef = doc(firestore, 'games', this.sessionUuid);
 
     // Listen for changes to the game state
-    onValue(this.gameStateRef, (snapshot) => {
-      const gameState = snapshot.val();
-      if (gameState && this.onGameStateChange) {
-        console.log('Received game state update:', gameState);
-        this.onGameStateChange(gameState);
+    this.unsubscribe = onSnapshot(this.gameStateRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const gameState = docSnap.data() as GameState;
+        if (gameState && this.onGameStateChange) {
+          console.log('Received game state update:', {
+            gameId: gameState.gameId,
+            sessionUuid: gameState.sessionUuid,
+            period: gameState.period,
+            homeScore: gameState.home.score,
+            awayScore: gameState.away.score
+          });
+          this.onGameStateChange(gameState);
+        }
+      } else {
+        console.warn('Game state document does not exist for sessionUuid:', this.sessionUuid);
+        if (this.gameId) {
+          console.warn('Original gameId was:', this.gameId);
+          console.warn('Make sure a game was created with this gameId');
+        }
+      }
+    }, (error) => {
+      console.error('Error listening to game state:', error);
+      if (this.gameId) {
+        console.error('Failed to listen for gameId:', this.gameId);
       }
     });
   }
 
-  getSessionId(): string | null {
-    return this.sessionId;
+  getSessionUuid(): string | null {
+    return this.sessionUuid;
+  }
+
+  getGameId(): string | null {
+    return this.gameId;
   }
 
   disconnect() {
-    // Clean up Firebase listener
-    if (this.gameStateRef) {
-      // Note: with Firebase v9+, we don't need to manually unsubscribe
-      // as the onValue listener is automatically cleaned up
-      this.gameStateRef = null;
+    // Clean up Firestore listener
+    if (this.unsubscribe) {
+      this.unsubscribe();
+      this.unsubscribe = null;
     }
+
+    this.gameStateRef = null;
 
     // Stop the receiver context
     if (this.context) {

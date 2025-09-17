@@ -10,7 +10,8 @@ import {
 } from 'react-native';
 import { Navigator } from '../abstractions/nav';
 import { Themes } from '../themes/themes';
-import { BballGameState, BballLogic } from '../bball_logic';
+import { GameState } from '@common/types/gameState';
+import { BballLogic } from '../bball_logic';
 
 const nav = Navigator;
 
@@ -21,7 +22,7 @@ export type BballProps = {
 type BballState = {
   longPressCount: number;
   shotClockPressedIn: number;
-  gameState: BballGameState;
+  gameState: GameState;
 };
 
 export const Settings = (props: any) => {

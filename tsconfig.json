@@ -24,7 +24,11 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true
+    "noEmit": true,
+    "baseUrl": "./src",
+    "paths": {
+      "@common/*": ["common/*"]
+    }
   },
   "compileOnSave": true,
   "include": [
