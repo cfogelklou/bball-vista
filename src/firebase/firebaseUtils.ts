@@ -16,12 +16,17 @@ import {
 } from 'firebase/firestore';
 import { firestore } from './config';
 import { GameState, createDefaultGameState } from '@common/types/gameState';
-import * as crypto from 'crypto';
 
-// Deterministically hash gameID to a valid UUID format
-function hashGameIdToUuid(gameId: string): string {
-  // Use SHA-1 to get a long enough hex string
-  const hash = crypto.createHash('sha1').update(gameId).digest('hex'); // 40 hex chars
+// Deterministically hash gameID to a valid UUID format using Web Crypto API
+async function hashGameIdToUuid(gameId: string): Promise<string> {
+  // Encode the input string as a Uint8Array
+  const encoder = new TextEncoder();
+  const data = encoder.encode(gameId);
+  // Compute SHA-1 hash
+  const hashBuffer = await window.crypto.subtle.digest('SHA-1', data); // 20 bytes
+  // Convert hash to hex string
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join(''); // 40 hex chars
   // UUID format: 8-4-4-4-12
   const uuid = [
     hash.substring(0, 8),
