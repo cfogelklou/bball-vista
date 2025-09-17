@@ -81,8 +81,8 @@ export const Scoreboard = (props: ScoreboardProps) => {
   }
 
 
-  const bonusAway = gameState.home?.fouls >= 5 ? 'BONUS' : '';
-  const bonusHome = gameState.away?.fouls >= 5 ? 'BONUS' : '';
+  const bonusAway = gameState.away?.fouls >= 5 ? 'BONUS' : '';
+  const bonusHome = gameState.home?.fouls >= 5 ? 'BONUS' : '';
   const homePossColor = gameState.possessionHome ? 'red' : Themes.colors.dark_grey;
   const awayPossColor = !gameState.possessionHome ? 'red' : Themes.colors.dark_grey;
 
