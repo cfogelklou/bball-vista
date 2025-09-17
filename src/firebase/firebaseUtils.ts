@@ -16,29 +16,20 @@ import {
 } from 'firebase/firestore';
 import { firestore } from './config';
 import { GameState, createDefaultGameState } from '@common/types/gameState';
+import * as crypto from 'crypto';
 
-// Simple hash function to convert gameID to UUID
+// Deterministically hash gameID to a valid UUID format
 function hashGameIdToUuid(gameId: string): string {
-  let hash = 0;
-  for (let i = 0; i < gameId.length; i++) {
-    const char = gameId.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32bit integer
-  }
-
-  // Convert hash to positive number and create UUID format
-  const positiveHash = Math.abs(hash);
-  const hashStr = positiveHash.toString(16).padStart(8, '0');
-
-  // Create a deterministic UUID from the hash
+  // Use SHA-1 to get a long enough hex string
+  const hash = crypto.createHash('sha1').update(gameId).digest('hex'); // 40 hex chars
+  // UUID format: 8-4-4-4-12
   const uuid = [
-    hashStr.substring(0, 8),
-    hashStr.substring(0, 4),
-    '4' + hashStr.substring(1, 4), // Version 4 UUID
-    '8' + hashStr.substring(1, 4), // Variant bits
-    hashStr.substring(0, 12)
+    hash.substring(0, 8),
+    hash.substring(8, 12),
+    '4' + hash.substring(13, 16), // Version 4 UUID
+    ((parseInt(hash.substring(16, 18), 16) & 0x3f | 0x80).toString(16)).padStart(2, '0') + hash.substring(18, 20), // Variant bits
+    hash.substring(20, 32)
   ].join('-');
-
   return uuid;
 }
 
