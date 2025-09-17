@@ -53,7 +53,7 @@ export class Bball extends React.Component {
     gameState: createDefaultGameState('temp-session'),
   };
 
-  interval: undefined | NodeJS.Timeout = undefined;
+  interval: NodeJS.Timeout | undefined = undefined;
   private previousGameState: GameState = createDefaultGameState('temp-session');
 
   constructor(props: any) {
