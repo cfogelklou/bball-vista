@@ -24,7 +24,7 @@ echo "Extracting $ARCHIVE..."
 # Check if extraction was successful
 if [ $? -eq 0 ]; then
     echo "Extraction completed successfully. Moving config.ts to app directory."
-    mv config.ts ../src/firebase/
+    mv config.ts ../src/firebase/config.ts
 else
     echo "Error: Extraction failed. Please check the password or archive integrity."
     exit 1
