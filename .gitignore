@@ -20,6 +20,8 @@ logs
 /build
 /dist
 
+/src/firebase/config.ts
+
 # misc
 .DS_Store
 .env.local
