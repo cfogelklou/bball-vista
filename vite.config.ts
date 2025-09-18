@@ -9,7 +9,8 @@ export default defineConfig({
   resolve: {
     alias: {
       'react-native': 'react-native-web',
-      '@common': resolve(__dirname, 'src/common')
+      '@common': resolve(__dirname, 'src/common'),
+      '@abstractions': resolve(__dirname, 'src/web/abstractions')
     }
   }
 })
