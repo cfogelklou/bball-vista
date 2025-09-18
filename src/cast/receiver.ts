@@ -2,7 +2,7 @@
 import { doc, onSnapshot, DocumentReference, Unsubscribe } from 'firebase/firestore';
 import { firestore } from '../firebase/config';
 import { GameState } from '@common/types/gameState';
-import { FirebaseUtils } from '../firebase/firebaseUtils';
+import { FirebaseUtils } from '@abstractions/firebaseUtils';
 
 declare const cast: any;
 

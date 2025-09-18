@@ -27,7 +27,8 @@
     "noEmit": true,
     "baseUrl": "./src",
     "paths": {
-      "@common/*": ["common/*"]
+      "@common/*": ["common/*"],
+      "@abstractions/*": ["web/abstractions/*"]
     }
   },
   "compileOnSave": true,
