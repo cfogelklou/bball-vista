@@ -55,18 +55,18 @@ export function ClockProvider({ children }: { children: ReactNode }) {
     const { periodClock, shotClock } = currentGame;
 
     // Synchronize the game clock
-    if (periodClock.startTime > 0) {
-      // If startTime is non-zero, the clock is running. Start a local timer.
-      startLocalClock('gameClock', periodClock.startTime, periodClock.msRemaining, setGameClockTime);
+    if (periodClock.timestampUtcStarted > 0) {
+      // If timestampUtcStarted is non-zero, the clock is running. Start a local timer.
+      startLocalClock('gameClock', periodClock.timestampUtcStarted, periodClock.msRemaining, setGameClockTime);
     } else {
-      // If startTime is zero, the clock is stopped. Stop the local timer and set the display time to the value from Firebase.
+      // If timestampUtcStarted is zero, the clock is stopped. Stop the local timer and set the display time to the value from Firebase.
       stopLocalClock('gameClock');
       setGameClockTime(periodClock.msRemaining);
     }
 
     // Synchronize the shot clock
-    if (shotClock.startTime > 0) {
-      startLocalClock('shotClock', shotClock.startTime, shotClock.msRemaining, setShotClockTime);
+    if (shotClock.timestampUtcStarted > 0) {
+      startLocalClock('shotClock', shotClock.timestampUtcStarted, shotClock.msRemaining, setShotClockTime);
     } else {
       stopLocalClock('shotClock');
       setShotClockTime(shotClock.msRemaining);
@@ -93,17 +93,17 @@ export function ClockProvider({ children }: { children: ReactNode }) {
     if (!currentGame) return;
 
     const clock = clockId === 'periodClock' ? currentGame.periodClock : currentGame.shotClock;
-    if (clock.startTime === 0) return; // Clock is not running
+    if (clock.timestampUtcStarted === 0) return; // Clock is not running
 
     // Calculate the time that has passed since the clock was started.
-    const elapsedTime = getElapsedTime(clock.startTime);
+    const elapsedTime = getElapsedTime(clock.timestampUtcStarted);
     const newRemainingTime = Math.max(0, clock.msRemaining - elapsedTime);
 
     // Prepare the update to be sent to Firebase.
     const updates: Partial<GameState> = {
       [clockId]: {
         ...clock,
-        startTime: 0, // Set startTime to 0 to indicate the clock is stopped.
+        timestampUtcStarted: 0, // Set timestampUtcStarted to 0 to indicate the clock is stopped.
         msRemaining: newRemainingTime,
       },
     };

@@ -59,12 +59,12 @@ export function createDefaultGameState(sessionUuid: string): GameState {
     home: {
       score: 0,
       fouls: 0,
-      timeouts: 3
+      timeouts: 0
     },
     away: {
       score: 0,
       fouls: 0,
-      timeouts: 3
+      timeouts: 0
     },
     period: 1,
     possessionHome: true

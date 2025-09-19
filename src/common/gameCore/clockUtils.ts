@@ -8,13 +8,13 @@ const timers: Record<string, number> = {};
 /**
  * Starts a local countdown timer for a clock.
  * @param clockId - A unique ID for the clock (e.g., 'gameClock').
- * @param startTime - The server timestamp when the clock started.
- * @param remainingTime - The time remaining on the clock at startTime.
+ * @param timestampUtcStarted - The server timestamp when the clock started.
+ * @param remainingTime - The time remaining on the clock at timestampUtcStarted.
  * @param onTick - Callback function executed on each timer tick, receiving the new display time.
  */
 export function startLocalClock(
   clockId: string,
-  startTime: number,
+  timestampUtcStarted: number,
   remainingTime: number,
   onTick: (displayTime: number) => void
 ): void {
@@ -22,7 +22,7 @@ export function startLocalClock(
   stopLocalClock(clockId);
 
   const intervalId = setInterval(() => {
-    const elapsedTime = getElapsedTime(startTime);
+    const elapsedTime = getElapsedTime(timestampUtcStarted);
     const displayTime = Math.max(0, remainingTime - elapsedTime);
     onTick(displayTime);
 
@@ -47,12 +47,12 @@ export function stopLocalClock(clockId: string): void {
 
 /**
  * Calculates the elapsed time since the clock started.
- * @param startTime - The server timestamp when the clock started.
+ * @param timestampUtcStarted - The server timestamp when the clock started.
  * @returns The elapsed time in milliseconds.
  */
-export function getElapsedTime(startTime: number): number {
-  if (startTime === 0) {
+export function getElapsedTime(timestampUtcStarted: number): number {
+  if (timestampUtcStarted === 0) {
     return 0;
   }
-  return Date.now() - startTime;
+  return Date.now() - timestampUtcStarted;
 }

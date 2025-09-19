@@ -3,6 +3,7 @@ import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { Themes } from '../themes/themes';
 import { Score } from '../components/score';
 import { Clock } from '../components/clock';
+import { useReceiverClock } from '../common/gameCore/ReceiverClockContext';
 import deepEqual from 'deep-equal';
 import { GameState, createDefaultGameState } from '@common/types/gameState';
 
@@ -21,22 +22,14 @@ function formatTime(ms: number): string {
   }
 }
 
-function getMainClockDisplay(gameState: GameState): string {
-  // Default to 10 minutes if no valid clock data
-  const defaultMs = 10 * 60 * 1000; // 10 minutes
-  if (!gameState.periodClock || gameState.periodClock.msRemaining === undefined) {
-    return formatTime(defaultMs);
-  }
-  return formatTime(gameState.periodClock.msRemaining);
+function getMainClockDisplay(clockContext: any): string {
+  const ms = clockContext.getDisplayTime('periodClock');
+  return formatTime(ms);
 }
 
-function getShotClockDisplay(gameState: GameState): string {
-  // Default to 24 seconds if no valid clock data
-  const defaultMs = 24 * 1000; // 24 seconds
-  if (!gameState.shotClock || gameState.shotClock.msRemaining === undefined) {
-    return formatTime(defaultMs);
-  }
-  return formatTime(gameState.shotClock.msRemaining);
+function getShotClockDisplay(clockContext: any): string {
+  const ms = clockContext.getDisplayTime('shotClock');
+  return formatTime(ms);
 }
 
 export type ScoreboardProps = {
@@ -48,6 +41,7 @@ export type ScoreboardProps = {
 const GOLDEN_RATIO = 1600 / 900; // Golden ratio
 
 export const Scoreboard = (props: ScoreboardProps) => {
+  const clockContext = useReceiverClock();
   const [width, setWidth] = useState(1.0);
   const [height, setHeight] = useState(1.0);
   const [caretSize, setCaretSize] = useState(1.0);
@@ -99,7 +93,7 @@ export const Scoreboard = (props: ScoreboardProps) => {
         <View style={{ flex: GOLDEN_RATIO }}>
           <View style={{ flex: 2 }}>
             <Clock
-              clock={getMainClockDisplay(gameState)}
+              clock={getMainClockDisplay(clockContext)}
               color={'red'}
             ></Clock>
           </View>
@@ -158,7 +152,7 @@ export const Scoreboard = (props: ScoreboardProps) => {
         <View style={styles.foulsAndShotClockRow}>
           <Score
             title={'shot'}
-            scoreText={getShotClockDisplay(gameState)}
+            scoreText={getShotClockDisplay(clockContext)}
             color='red'
           ></Score>
         </View>
