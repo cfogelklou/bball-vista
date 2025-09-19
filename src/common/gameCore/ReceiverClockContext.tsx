@@ -6,9 +6,24 @@
 import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { startLocalClock, stopLocalClock, getElapsedTime } from './clockUtils';
 import { GameState } from '../types/gameState';
+import clockSynchronizer from './clockSync';
 
 interface ReceiverClockContextState {
   getDisplayTime: (clockId: 'periodClock' | 'shotClock') => number;
+  getSyncStats: () => {
+    sampleCount: number;
+    averageDifference: number;
+    latestDifference: number | null;
+    latestDeviceId: string | null;
+    standardDeviation: number;
+    deviceStats: { [deviceId: string]: {
+      sampleCount: number;
+      averageDifference: number;
+      latestDifference: number;
+      standardDeviation: number;
+      lastSeen: number;
+    } };
+  };
 }
 
 const ReceiverClockContext = createContext<ReceiverClockContextState | null>(null);
@@ -38,7 +53,12 @@ export function ReceiverClockProvider({
       const wasRunning = (previousGameState?.periodClock?.timestampUtcStarted ?? 0) > 0;
 
       if (!wasRunning) {
-        // Clock just started - use local timestamp and full remaining time
+        // Clock just started - record time difference for synchronization
+        clockSynchronizer.recordTimeDifference(periodClock.timestampUtcStarted).catch(error => {
+          console.warn('Failed to record time difference for period clock:', error);
+        });
+
+        // Use local timestamp and full remaining time
         startLocalClock('gameClock', Date.now(), periodClock.msRemaining, setGameClockTime);
       }
       // If already running, don't restart timer (avoid interrupting smooth countdown)
@@ -53,7 +73,12 @@ export function ReceiverClockProvider({
       const wasRunning = (previousGameState?.shotClock?.timestampUtcStarted ?? 0) > 0;
 
       if (!wasRunning) {
-        // Clock just started - use local timestamp and full remaining time
+        // Clock just started - record time difference for synchronization
+        clockSynchronizer.recordTimeDifference(shotClock.timestampUtcStarted).catch(error => {
+          console.warn('Failed to record time difference for shot clock:', error);
+        });
+
+        // Use local timestamp and full remaining time
         startLocalClock('shotClock', Date.now(), shotClock.msRemaining, setShotClockTime);
       }
       // If already running, don't restart timer (avoid interrupting smooth countdown)
@@ -75,8 +100,13 @@ export function ReceiverClockProvider({
     return clockId === 'periodClock' ? gameClockTime : shotClockTime;
   };
 
+  const getSyncStats = () => {
+    return clockSynchronizer.getSyncStats();
+  };
+
   const value = {
     getDisplayTime,
+    getSyncStats,
   };
 
   return <ReceiverClockContext.Provider value={value}>{children}</ReceiverClockContext.Provider>;

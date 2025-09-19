@@ -16,6 +16,8 @@ export interface ClockState {
   timestampUtcStarted: number;
   // Number of milliseconds remaining on the clock
   msRemaining: number;
+  // ID of the device that started this clock (optional for backward compatibility)
+  startedByDeviceId?: string;
 }
 
 export interface GameState {
