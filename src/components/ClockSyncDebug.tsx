@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useReceiverClock } from '../common/gameCore/ReceiverClockContext';
-import deviceIdentifier from '../common/utils/deviceIdentifier';
 
 /**
  * Debug component to display clock synchronization statistics
@@ -11,18 +10,12 @@ export const ClockSyncDebug = () => {
   const { getSyncStats } = useReceiverClock();
   const stats = getSyncStats();
   const [showDeviceDetails, setShowDeviceDetails] = useState(false);
-  const [currentDeviceId, setCurrentDeviceId] = useState<string>('Loading...');
-
-  // Get current device ID on mount
-  React.useEffect(() => {
-    deviceIdentifier.getDeviceId().then(setCurrentDeviceId);
-  }, []);
 
   if (stats.sampleCount === 0) {
     return (
       <View style={styles.container}>
         <Text style={styles.title}>Clock Sync: No data</Text>
-        <Text style={styles.deviceInfo}>Device: {currentDeviceId}</Text>
+        <Text style={styles.deviceInfo}>Receiver - awaiting control device events</Text>
       </View>
     );
   }
@@ -40,7 +33,7 @@ export const ClockSyncDebug = () => {
         </Text>
       </TouchableOpacity>
 
-      <Text style={styles.deviceInfo}>This Device: {currentDeviceId}</Text>
+      <Text style={styles.deviceInfo}>Receiver - tracking control devices</Text>
       <Text style={styles.stat}>Samples: {stats.sampleCount}</Text>
       <Text style={styles.stat}>Devices: {deviceCount}</Text>
       <Text style={styles.stat}>Avg Diff: {Math.round(stats.averageDifference)}ms</Text>

@@ -4,8 +4,6 @@
  * to enable accurate cross-device time measurements and per-device drift analysis.
  */
 
-import deviceIdentifier from '../utils/deviceIdentifier';
-
 interface TimeDifferenceSample {
   deviceId: string; // ID of the device that provided this sample
   localTime: number;
@@ -30,14 +28,15 @@ class ClockSynchronizer {
   /**
    * Record a new time difference sample when we detect a clock start event
    * @param firebaseTimestamp - The timestamp from Firebase when clock started
+   * @param deviceId - ID of the device that started the clock (from Firebase)
    */
-  async recordTimeDifference(firebaseTimestamp: number): Promise<void> {
+  recordTimeDifference(firebaseTimestamp: number, deviceId?: string): void {
     const localTime = Date.now();
     const difference = localTime - firebaseTimestamp;
-    const deviceId = await deviceIdentifier.getDeviceId();
+    const sampleDeviceId = deviceId || 'UNKNOWN';
 
     const sample: TimeDifferenceSample = {
-      deviceId,
+      deviceId: sampleDeviceId,
       localTime,
       firebaseTime: firebaseTimestamp,
       difference,
@@ -55,7 +54,7 @@ class ClockSynchronizer {
     // Update average
     this.updateAverageDifference();
 
-    console.log(`Clock sync [${deviceId}]: Local-Firebase difference = ${difference}ms, Average = ${this.currentAverageDifference}ms`);
+    console.log(`Clock sync [${sampleDeviceId}]: Local-Firebase difference = ${difference}ms, Average = ${this.currentAverageDifference}ms`);
   }
 
   /**

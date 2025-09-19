@@ -10,7 +10,6 @@ import { startLocalClock, stopLocalClock, getElapsedTime } from './clockUtils';
 import { useGame } from '../../../../mySrc/contexts/GameContext';
 import { GameState } from '../types/gameState';
 import clockSynchronizer from './clockSync';
-import deviceIdentifier from '../utils/deviceIdentifier';
 
 /**
  * @interface ClockContextState
@@ -31,7 +30,7 @@ interface ClockContextState {
    * It calculates the elapsed time and sends an update to Firebase.
    * @param clockId - The identifier for the clock to stop.
    */
-  handleStopClock: (clockId: 'periodClock' | 'shotClock') => Promise<void>;
+  handleStopClock: (clockId: 'periodClock' | 'shotClock') => void;
 
   /**
    * Get clock synchronization statistics
@@ -85,9 +84,7 @@ export function ClockProvider({ children }: { children: ReactNode }) {
 
       if (!wasRunning) {
         // Clock just started - record time difference for synchronization
-        clockSynchronizer.recordTimeDifference(periodClock.timestampUtcStarted).catch(error => {
-          console.warn('Failed to record time difference for period clock:', error);
-        });
+        clockSynchronizer.recordTimeDifference(periodClock.timestampUtcStarted, periodClock.startedByDeviceId);
       }
 
       // If timestampUtcStarted is non-zero, the clock is running. Start a local timer.
@@ -105,9 +102,7 @@ export function ClockProvider({ children }: { children: ReactNode }) {
 
       if (!wasRunning) {
         // Clock just started - record time difference for synchronization
-        clockSynchronizer.recordTimeDifference(shotClock.timestampUtcStarted).catch(error => {
-          console.warn('Failed to record time difference for shot clock:', error);
-        });
+        clockSynchronizer.recordTimeDifference(shotClock.timestampUtcStarted, shotClock.startedByDeviceId);
       }
 
       startLocalClock('shotClock', shotClock.timestampUtcStarted, shotClock.msRemaining, setShotClockTime);
@@ -135,8 +130,9 @@ export function ClockProvider({ children }: { children: ReactNode }) {
 
   /**
    * Handles the logic for stopping a clock.
+   * NOTE: This function is for control apps only, not receiver apps
    */
-  const handleStopClock = async (clockId: 'periodClock' | 'shotClock') => {
+  const handleStopClock = (clockId: 'periodClock' | 'shotClock') => {
     if (!currentGame) return;
 
     const clock = clockId === 'periodClock' ? currentGame.periodClock : currentGame.shotClock;
@@ -146,16 +142,14 @@ export function ClockProvider({ children }: { children: ReactNode }) {
     const elapsedTime = getElapsedTime(clock.timestampUtcStarted);
     const newRemainingTime = Math.max(0, clock.msRemaining - elapsedTime);
 
-    // Get device ID for this stop action
-    const deviceId = await deviceIdentifier.getDeviceId();
-
     // Prepare the update to be sent to Firebase.
+    // Note: Device ID should be set by the control app that calls this function
     const updates: Partial<GameState> = {
       [clockId]: {
         ...clock,
         timestampUtcStarted: 0, // Set timestampUtcStarted to 0 to indicate the clock is stopped.
         msRemaining: newRemainingTime,
-        startedByDeviceId: deviceId, // Record which device stopped the clock
+        // startedByDeviceId will be set by the calling control app
       },
     };
 

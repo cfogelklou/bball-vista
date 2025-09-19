@@ -54,9 +54,7 @@ export function ReceiverClockProvider({
 
       if (!wasRunning) {
         // Clock just started - record time difference for synchronization
-        clockSynchronizer.recordTimeDifference(periodClock.timestampUtcStarted).catch(error => {
-          console.warn('Failed to record time difference for period clock:', error);
-        });
+        clockSynchronizer.recordTimeDifference(periodClock.timestampUtcStarted, periodClock.startedByDeviceId);
 
         // Use local timestamp and full remaining time
         startLocalClock('gameClock', Date.now(), periodClock.msRemaining, setGameClockTime);
@@ -74,9 +72,7 @@ export function ReceiverClockProvider({
 
       if (!wasRunning) {
         // Clock just started - record time difference for synchronization
-        clockSynchronizer.recordTimeDifference(shotClock.timestampUtcStarted).catch(error => {
-          console.warn('Failed to record time difference for shot clock:', error);
-        });
+        clockSynchronizer.recordTimeDifference(shotClock.timestampUtcStarted, shotClock.startedByDeviceId);
 
         // Use local timestamp and full remaining time
         startLocalClock('shotClock', Date.now(), shotClock.msRemaining, setShotClockTime);
