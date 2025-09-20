@@ -101,13 +101,14 @@ export function isClockRunning(clock: ClockState): boolean {
 /**
  * Helper function to start a clock
  */
-export function startClock(clock: ClockState): ClockState {
+export function startClock(clock: ClockState, deviceId?: string): ClockState {
   // First, calculate current remaining time
   const currentRemaining = getCurrentClockTime(clock);
 
   return {
     timestampUtcStarted: Date.now(),
-    msRemaining: currentRemaining
+    msRemaining: currentRemaining,
+    startedByDeviceId: deviceId
   };
 }
 

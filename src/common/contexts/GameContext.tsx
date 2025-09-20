@@ -199,6 +199,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
     }
 
     try {
+      // Ensure authentication before updating (automatically detects control vs receiver apps)
+      const authResult = await FirebaseUtils.ensureAuthenticated();
+      if (!authResult.success) {
+        return { success: false, error: `Authentication failed: ${authResult.error}` };
+      }
+
       const result = await FirebaseUtils.updateGameStateByGameId(state.currentGameId, updates);
       
       if (result.success) {

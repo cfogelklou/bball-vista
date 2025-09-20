@@ -8,6 +8,7 @@ import React, { createContext, useContext, useState, useEffect, useRef, ReactNod
 import { startLocalClock, stopLocalClock, getElapsedTime } from '@common/gameCore/clockUtils';
 import { GameState } from '@common/types/gameState';
 import clockSynchronizer from '@common/gameCore/clockSync';
+import { useDevice } from './DeviceContext';
 
 /**
  * Shared Clock Context State Interface
@@ -55,6 +56,9 @@ export function BaseClockProvider({
   const [gameClockTime, setGameClockTime] = useState(0);
   const [shotClockTime, setShotClockTime] = useState(0);
 
+  // Get device ID for synchronization comparison
+  const { deviceId: currentDeviceId } = useDevice();
+
   // Track previous state to detect transitions from stopped to running
   const previousGameStateRef = useRef<GameState | null>(null);
 
@@ -73,8 +77,20 @@ export function BaseClockProvider({
         // Clock just started - record time difference for synchronization
         clockSynchronizer.recordTimeDifference(periodClock.timestampUtcStarted, periodClock.startedByDeviceId);
 
-        // Receiver logic uses local timestamp for smoother display
-        const startTime = useReceiverLogic ? Date.now() : periodClock.timestampUtcStarted;
+        // Determine start time based on who started the clock
+        const startedByThisDevice = periodClock.startedByDeviceId === currentDeviceId && currentDeviceId != null;
+        const startTime = (useReceiverLogic || startedByThisDevice) ? Date.now() : periodClock.timestampUtcStarted;
+
+        console.log('🕐 PERIOD CLOCK START:', {
+          startedByDeviceId: periodClock.startedByDeviceId,
+          currentDeviceId,
+          startedByThisDevice,
+          useReceiverLogic,
+          startTime,
+          timestampUtcStarted: periodClock.timestampUtcStarted,
+          msRemaining: periodClock.msRemaining
+        });
+
         startLocalClock('gameClock', startTime, periodClock.msRemaining, setGameClockTime);
       }
       // If already running, don't restart timer (avoid interrupting smooth countdown)
@@ -92,8 +108,20 @@ export function BaseClockProvider({
         // Clock just started - record time difference for synchronization
         clockSynchronizer.recordTimeDifference(shotClock.timestampUtcStarted, shotClock.startedByDeviceId);
 
-        // Receiver logic uses local timestamp for smoother display
-        const startTime = useReceiverLogic ? Date.now() : shotClock.timestampUtcStarted;
+        // Determine start time based on who started the clock
+        const startedByThisDevice = shotClock.startedByDeviceId === currentDeviceId && currentDeviceId != null;
+        const startTime = (useReceiverLogic || startedByThisDevice) ? Date.now() : shotClock.timestampUtcStarted;
+
+        console.log('⏱️ SHOT CLOCK START:', {
+          startedByDeviceId: shotClock.startedByDeviceId,
+          currentDeviceId,
+          startedByThisDevice,
+          useReceiverLogic,
+          startTime,
+          timestampUtcStarted: shotClock.timestampUtcStarted,
+          msRemaining: shotClock.msRemaining
+        });
+
         startLocalClock('shotClock', startTime, shotClock.msRemaining, setShotClockTime);
       }
       // If already running, don't restart timer (avoid interrupting smooth countdown)
