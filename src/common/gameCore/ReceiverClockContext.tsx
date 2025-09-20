@@ -10,7 +10,7 @@ import { GameState } from '@common/types/gameState';
 /**
  * Receiver-specific context state (no handleStopClock)
  */
-export interface ReceiverClockContextState extends Omit<ClockContextState, 'handleStopClock'> {}
+export type ReceiverClockContextState = Omit<ClockContextState, 'handleStopClock'>;
 
 /**
  * Clock Provider for Receiver Apps
@@ -41,7 +41,7 @@ export function useReceiverClock(): ReceiverClockContextState {
   const context = useClock();
 
   // Remove handleStopClock from the context for receivers
-  const { handleStopClock, ...receiverContext } = context;
+  const { handleStopClock: _handleStopClock, ...receiverContext } = context;
 
   return receiverContext;
 }

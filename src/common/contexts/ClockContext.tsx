@@ -152,28 +152,30 @@ export function BaseClockProvider({
     return clockId === 'periodClock' ? gameClockTime : shotClockTime;
   }, [gameClockTime, shotClockTime]);
 
-  const handleStopClock = updateGameState ? (clockId: 'periodClock' | 'shotClock') => {
-    if (!gameState || !updateGameState) return;
+  const handleStopClock = useMemo(() => {
+    return updateGameState ? (clockId: 'periodClock' | 'shotClock') => {
+      if (!gameState || !updateGameState) return;
 
-    const clock = clockId === 'periodClock' ? gameState.periodClock : gameState.shotClock;
-    if (clock.timestampUtcStarted === 0) return; // Clock is not running
+      const clock = clockId === 'periodClock' ? gameState.periodClock : gameState.shotClock;
+      if (clock.timestampUtcStarted === 0) return; // Clock is not running
 
-    // Calculate the time that has passed since the clock was started
-    const elapsedTime = getElapsedTime(clock.timestampUtcStarted);
-    const newRemainingTime = Math.max(0, clock.msRemaining - elapsedTime);
+      // Calculate the time that has passed since the clock was started
+      const elapsedTime = getElapsedTime(clock.timestampUtcStarted);
+      const newRemainingTime = Math.max(0, clock.msRemaining - elapsedTime);
 
-    // Prepare the update to be sent to Firebase
-    const updates: Partial<GameState> = {
-      [clockId]: {
-        ...clock,
-        timestampUtcStarted: 0, // Set to 0 to indicate the clock is stopped
-        msRemaining: newRemainingTime,
-      },
-    };
+      // Prepare the update to be sent to Firebase
+      const updates: Partial<GameState> = {
+        [clockId]: {
+          ...clock,
+          timestampUtcStarted: 0, // Set to 0 to indicate the clock is stopped
+          msRemaining: newRemainingTime,
+        },
+      };
 
-    // Send the update to Firebase
-    updateGameState(updates);
-  } : undefined;
+      // Send the update to Firebase
+      updateGameState(updates);
+    } : undefined;
+  }, [updateGameState, gameState]);
 
   const getSyncStats = useCallback(() => {
     return clockSynchronizer.getSyncStats();

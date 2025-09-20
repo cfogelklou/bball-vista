@@ -3,10 +3,10 @@
  * @description Tests the BaseClockProvider and useClock hook functionality
  */
 
-import React, { ReactNode } from 'react';
+import React from 'react';
 import { describe, it, expect, beforeEach, afterEach, vi, Mock } from 'vitest';
 import { render, screen, act } from '@testing-library/react';
-import { BaseClockProvider, useClock, ClockContextState } from './ClockContext';
+import { BaseClockProvider, useClock } from './ClockContext';
 import { GameState, createDefaultGameState } from '@common/types/gameState';
 import * as clockUtils from '@common/gameCore/clockUtils';
 import clockSynchronizer from '@common/gameCore/clockSync';
@@ -36,7 +36,7 @@ vi.mock('@common/contexts/DeviceContext', () => ({
   useDevice: vi.fn(() => ({ deviceId: 'test-device-123' }))
 }));
 
-import { startLocalClock, stopLocalClock, getElapsedTime } from '@common/gameCore/clockUtils';
+// Imported for mocking only
 import { useDevice } from '@common/contexts/DeviceContext';
 
 // Mock console.log to avoid noise in tests

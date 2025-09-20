@@ -4,8 +4,8 @@
  * web-specific Firebase configuration.
  */
 
-import { initializeApp, getApps } from 'firebase/app';
-import { getAuth, signInAnonymously, User } from 'firebase/auth';
+import { getApps } from 'firebase/app';
+import { getAuth, signInAnonymously } from 'firebase/auth';
 import { GameUtils } from '@common/utils/gameUtils';
 import { GameState } from '@common/types/gameState';
 

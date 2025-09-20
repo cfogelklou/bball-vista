@@ -3,7 +3,7 @@
  */
 
 import React, { createContext, useContext, useReducer, useEffect, useCallback, ReactNode } from 'react';
-import { GameState, createDefaultGameState } from '@common/types/gameState';
+import { GameState } from '@common/types/gameState';
 import { FirebaseUtils } from '@abstractions/firebaseUtils';
 import { GameStorageService } from '@common/services/GameStorageService';
 
