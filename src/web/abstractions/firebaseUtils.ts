@@ -48,6 +48,47 @@ export class FirebaseUtils {
   }
 
   /**
+   * Create a new game (stubbed for PWA - games are created by mobile app)
+   */
+  static async createNewGame(gameId?: string): Promise<{ success: boolean; gameId?: string; sessionUuid?: string; error?: string }> {
+    // PWA/receiver cannot create new games - this is handled by the mobile app
+    return {
+      success: false,
+      error: 'Game creation is not supported in the receiver app. Games must be created from the mobile app.'
+    };
+  }
+
+  /**
+   * Connect to an existing game by gameId
+   */
+  static async connectToGame(gameId: string): Promise<{ success: boolean; sessionUuid?: string; error?: string }> {
+    try {
+      // Convert gameId to UUID
+      const sessionUuid = GameUtils.gameIdToUuid(gameId);
+      
+      // Check if the game exists by trying to get its state
+      const gameState = await GameUtils.getGameState(sessionUuid);
+      
+      if (gameState.success) {
+        return {
+          success: true,
+          sessionUuid
+        };
+      } else {
+        return {
+          success: false,
+          error: `Game with ID ${gameId} not found`
+        };
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to connect to game'
+      };
+    }
+  }
+
+  /**
    * Initialize a game session in Firestore using gameID and UUID
    */
   static async createGameSession(gameId?: string) {
