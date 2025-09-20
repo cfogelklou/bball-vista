@@ -4,14 +4,21 @@
  * web-specific Firebase configuration.
  */
 
-import { getApp } from 'firebase/app';
+import { initializeApp, getApps } from 'firebase/app';
 import { GameUtils } from '@common/utils/gameUtils';
 import { GameState } from '@common/types/gameState';
+
+// Import Firebase configuration from the config file
+import '../../firebase/config';
 
 // Initialize GameUtils with the Firebase app instance
 const initializeGameUtils = () => {
   try {
-    const app = getApp();
+    // Use the Firebase app that was already initialized by config.ts
+    const app = getApps()[0];
+    if (!app) {
+      throw new Error('Firebase app not initialized. Make sure config.ts is imported first.');
+    }
     GameUtils.initialize({ app });
   } catch (error) {
     console.error('Failed to initialize GameUtils with Firebase app:', error);
