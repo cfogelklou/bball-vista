@@ -2,6 +2,10 @@
  * Clock Utilities - Manages local countdown timers for clocks.
  */
 
+import { createDebugLogger } from '@common/utils/debug';
+
+const logger = createDebugLogger('clock');
+
 // Manages the state of active timers
 const timers: Record<string, number> = {};
 
@@ -24,10 +28,11 @@ export function startLocalClock(
   const intervalId = setInterval(() => {
     const elapsedTime = getElapsedTime(timestampUtcStarted);
     const displayTime = Math.max(0, remainingTime - elapsedTime);
-    console.log(`⏱️ [${clockId}] Timer tick: ${displayTime}ms remaining`);
+    logger.debug(`[${clockId}] Timer tick: ${displayTime}ms remaining`);
     onTick(displayTime);
 
     if (displayTime === 0) {
+      logger.info(`[${clockId}] Timer reached zero, stopping`);
       stopLocalClock(clockId);
     }
   }, 333);
@@ -40,7 +45,7 @@ export function startLocalClock(
  * @param clockId - The ID of the clock to stop.
  */
 export function stopLocalClock(clockId: string): void {
-  console.log(`⏱️ [${clockId}] Stopping local clock`);
+  logger.info(`[${clockId}] Stopping local clock`);
   if (timers[clockId]) {
     clearInterval(timers[clockId]);
     delete timers[clockId];
