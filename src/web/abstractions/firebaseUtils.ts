@@ -35,21 +35,11 @@ initializeGameUtils();
  */
 export class FirebaseUtils {
   /**
-   * Ensure user is authenticated (sign in anonymously if needed)
-   * Only authenticates for control apps (PWA), not receiver apps
+   * Initialize authentication for control apps (PWA)
+   * Call this explicitly from PWA App.tsx on startup
    */
-  static async ensureAuthenticated(): Promise<{ success: boolean; error?: string }> {
+  static async initializeAuthentication(): Promise<{ success: boolean; error?: string }> {
     try {
-      // Check if this is a receiver app (read-only) vs control app (PWA)
-      // Receivers typically don't have DOM elements like buttons for game control
-      const isReceiverApp = !document.querySelector('[data-testid="button"]') &&
-                           !document.querySelector('button');
-
-      if (isReceiverApp) {
-        console.log('🔐 Receiver app detected - skipping authentication (read-only mode)');
-        return { success: true };
-      }
-
       const app = getApps()[0];
       if (!app) {
         throw new Error('Firebase app not initialized');
@@ -81,6 +71,15 @@ export class FirebaseUtils {
       console.error('🔐 Authentication failed:', error);
       return { success: false, error: error instanceof Error ? error.message : 'Authentication failed' };
     }
+  }
+
+  /**
+   * Ensure user is authenticated (for backward compatibility)
+   * @deprecated Use initializeAuthentication() explicitly in PWA App.tsx instead
+   */
+  static async ensureAuthenticated(): Promise<{ success: boolean; error?: string }> {
+    console.warn('🔐 ensureAuthenticated() is deprecated. Use initializeAuthentication() explicitly in PWA App.tsx');
+    return this.initializeAuthentication();
   }
   /**
    * Test Firebase connection by attempting to read from Firestore
