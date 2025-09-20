@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { View, StyleSheet, Dimensions } from 'react-native';
 import { Themes } from '../themes/themes';
 import { Scoreboard } from '../components/scoreboard';
@@ -25,7 +25,7 @@ const buzzer = new Howl({
   onload: () => {
     console.log('Loaded');
   },
-  onloaderror: (soundId, error) => {
+  onloaderror: (_soundId, _error) => {
     console.log('Got loading error.');
   },
 });
@@ -38,7 +38,7 @@ const beeper = new Howl({
   onload: () => {
     console.log('Loaded');
   },
-  onloaderror: (soundId, error) => {
+  onloaderror: (_soundId, _error) => {
     console.log('Got loading error.');
   },
 });
@@ -51,13 +51,13 @@ function BballReceiver() {
   const [sessionUuid, setSessionUuid] = useState<string>('');
   const previousGameState = useRef<GameState>(createDefaultGameState('temp-session'));
 
-  const setGameStateIfChanged = (newGamestate: GameState) => {
+  const setGameStateIfChanged = useCallback((newGamestate: GameState) => {
     if (!deepEqual(newGamestate, gameState)) {
       setGameState({ ...newGamestate });
     }
-  };
+  }, [gameState]);
 
-  const checkForSoundTriggers = () => {
+  const checkForSoundTriggers = useCallback(() => {
     // Get current clock times using helper functions
     const currentPeriodClockMs = getCurrentClockTime(gameState.periodClock);
     const currentShotClockMs = getCurrentClockTime(gameState.shotClock);
@@ -81,15 +81,18 @@ function BballReceiver() {
 
     // Update previous state for next comparison
     previousGameState.current = { ...gameState };
-  };
+  }, [gameState]);
 
-  const handleGameStateChange = (newGameState: GameState) => {
+  const handleGameStateChange = useCallback((newGameState: GameState) => {
     setGameStateIfChanged(newGameState);
-  };
+  }, [setGameStateIfChanged]);
 
   useEffect(() => {
+    // Store current ref value to avoid stale closure warning
+    const currentReceiver = castReceiver.current;
+
     // Initialize Cast receiver with game state change callback
-    castReceiver.current.initialize(handleGameStateChange);
+    currentReceiver.initialize(handleGameStateChange);
 
     // Set up interval to check for sound triggers
     const interval = setInterval(() => {
@@ -97,13 +100,14 @@ function BballReceiver() {
     }, 100);
 
     // Update game ID and session UUID
-    setGameId(castReceiver.current.getGameId() || '');
-    setSessionUuid(castReceiver.current.getSessionUuid() || '');
+    setGameId(currentReceiver.getGameId() || '');
+    setSessionUuid(currentReceiver.getSessionUuid() || '');
 
     return () => {
       clearInterval(interval);
-      castReceiver.current.disconnect();
+      currentReceiver.disconnect();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Update game ID and session UUID when they change
@@ -137,7 +141,7 @@ function BballReceiver() {
 }
 
 // Main component
-export function Bball(props: BballProps) {
+export function Bball(_props: BballProps) {
   return <BballReceiver />;
 }
 

@@ -9,26 +9,17 @@ export type ClockProps = {
   color?: string;
 };
 
-type ClockDimensions = {
-  myWidth: number;
-  myHeight: number;
-};
-
 export const Clock = (props: ClockProps) => {
   // xx.xx
   const clock = props.clock ? props.clock : 0;
   const color = props.color ? props.color : 'green';
 
   const [fontSize, setFontSize] = useState(1);
-  const [width, setWidth] = useState(1);
-  const [height, setHeight] = useState(1);
   const [margin, setMargin] = useState(1);
 
 
   const calculateSizes = (width: number, height: number) => {
     setFontSize(height * 0.5);
-    setWidth(width);
-    setHeight(height);
     setMargin(height * 0.05);
   };
 
