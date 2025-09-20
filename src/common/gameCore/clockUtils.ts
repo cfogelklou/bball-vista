@@ -35,7 +35,7 @@ export function startLocalClock(
       logger.info(`[${clockId}] Timer reached zero, stopping`);
       stopLocalClock(clockId);
     }
-  }, 333);
+  }, 100);
 
   timers[clockId] = intervalId as any;
 }
