@@ -3,6 +3,7 @@ class WebNavigator {
   history: any;
 
   constructor() {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     inst = this;
   }
 

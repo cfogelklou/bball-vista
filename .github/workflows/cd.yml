@@ -45,21 +45,24 @@ jobs:
       with:
         node-version: "20"
 
-    - name: Setup Bun
-      uses: oven-sh/setup-bun@v1
-      with:
-        bun-version: latest
-
     - name: Extract secrets
       if: github.ref == 'refs/heads/ballercast' || (github.event_name == 'pull_request' && github.base_ref == 'ballercast')
       run: |
         cd secrets
         ./extract_secrets.sh ${{ secrets.CREDENTIALS_AND_ID_PUB }}
 
-    - name: install and build
+    - name: install and lint
       run: |
-        bun install
-        bun run build
+        npm ci
+        npm run lint
+
+    - name: test
+      run: |
+        npm run test
+
+    - name: build
+      run: |
+        npm run build
 
     - name: Upload
       if: github.event_name == 'push' && (github.ref == 'refs/heads/ballercast' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')

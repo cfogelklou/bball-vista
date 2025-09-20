@@ -10,22 +10,15 @@ import {
 } from 'react-native';
 import { Navigator } from '../abstractions/nav';
 import { Themes } from '../themes/themes';
-import { GameState } from '@common/types/gameState';
 import { BballLogic } from '../bball_logic';
 
 const nav = Navigator;
 
-export type BballProps = {
+export type SettingsProps = {
   placeholder?: string;
 };
 
-type BballState = {
-  longPressCount: number;
-  shotClockPressedIn: number;
-  gameState: GameState;
-};
-
-export const Settings = (props: any) => {
+export const Settings = (_props: SettingsProps) => {
   const dim = Dimensions.get('window');
   const [minutes, setMinutes] = useState(10);
 

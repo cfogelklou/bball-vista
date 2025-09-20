@@ -2,12 +2,17 @@ import './index.css';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { Bball } from './screens/bball';
+import { DeviceProvider } from './common/contexts/DeviceContext';
 import * as serviceWorker from './serviceWorker';
 
 const container = document.getElementById('root');
 if (container) {
   const root = createRoot(container);
-  root.render(<Bball />);
+  root.render(
+    <DeviceProvider>
+      <Bball />
+    </DeviceProvider>
+  );
 }
 
 // If you want your app to work offline and load faster, you can change

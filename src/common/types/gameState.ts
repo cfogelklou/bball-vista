@@ -16,6 +16,8 @@ export interface ClockState {
   timestampUtcStarted: number;
   // Number of milliseconds remaining on the clock
   msRemaining: number;
+  // ID of the device that started this clock (optional for backward compatibility)
+  startedByDeviceId?: string;
 }
 
 export interface GameState {
@@ -59,12 +61,12 @@ export function createDefaultGameState(sessionUuid: string): GameState {
     home: {
       score: 0,
       fouls: 0,
-      timeouts: 3
+      timeouts: 0
     },
     away: {
       score: 0,
       fouls: 0,
-      timeouts: 3
+      timeouts: 0
     },
     period: 1,
     possessionHome: true
@@ -99,13 +101,14 @@ export function isClockRunning(clock: ClockState): boolean {
 /**
  * Helper function to start a clock
  */
-export function startClock(clock: ClockState): ClockState {
+export function startClock(clock: ClockState, deviceId?: string): ClockState {
   // First, calculate current remaining time
   const currentRemaining = getCurrentClockTime(clock);
 
   return {
     timestampUtcStarted: Date.now(),
-    msRemaining: currentRemaining
+    msRemaining: currentRemaining,
+    startedByDeviceId: deviceId
   };
 }
 

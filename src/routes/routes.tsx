@@ -1,17 +1,17 @@
 import React from 'react';
-import { Route, Switch } from 'react-router-dom';
+import { Routes as RouterRoutes, Route } from 'react-router-dom';
 import { Bball } from '../screens/bball';
 import { Settings } from '../screens/settings';
 
-const Routes = (props: any) => {
+const Routes = () => {
   return (
     <div>
-      <Switch>
-        <Route exact path='/' render={(props) => <Settings {...props} />} />
-        <Route path='/bball' render={(props) => <Bball {...props} />} />
-        <Route path='/settings' render={(props) => <Settings {...props} />} />
-        <Route component={Settings} />
-      </Switch>
+      <RouterRoutes>
+        <Route path='/' element={<Settings />} />
+        <Route path='/bball' element={<Bball />} />
+        <Route path='/settings' element={<Settings />} />
+        <Route path='*' element={<Settings />} />
+      </RouterRoutes>
     </div>
   );
 };

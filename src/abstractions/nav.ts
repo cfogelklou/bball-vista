@@ -8,7 +8,7 @@ import WebNavigator from '../web/web_navigator';
 import { Platform } from 'react-native';
 
 const dummyNavigator = {
-  navigate: (where: string) => {
+  navigate: (_where: string) => {
     console.log('TODO:Replace dummy navigator');
   },
 };

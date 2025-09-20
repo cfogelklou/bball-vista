@@ -4,14 +4,22 @@
  * web-specific Firebase configuration.
  */
 
-import { getApp } from 'firebase/app';
-import { GameUtils } from '@common/gameCore/gameUtils';
+import { getApps } from 'firebase/app';
+import { getAuth, signInAnonymously } from 'firebase/auth';
+import { GameUtils } from '@common/utils/gameUtils';
 import { GameState } from '@common/types/gameState';
+
+// Import Firebase configuration from the config file
+import '../../firebase/config';
 
 // Initialize GameUtils with the Firebase app instance
 const initializeGameUtils = () => {
   try {
-    const app = getApp();
+    // Use the Firebase app that was already initialized by config.ts
+    const app = getApps()[0];
+    if (!app) {
+      throw new Error('Firebase app not initialized. Make sure config.ts is imported first.');
+    }
     GameUtils.initialize({ app });
   } catch (error) {
     console.error('Failed to initialize GameUtils with Firebase app:', error);
@@ -26,6 +34,53 @@ initializeGameUtils();
  * Delegates all functionality to the common GameUtils class
  */
 export class FirebaseUtils {
+  /**
+   * Initialize authentication for control apps (PWA)
+   * Call this explicitly from PWA App.tsx on startup
+   */
+  static async initializeAuthentication(): Promise<{ success: boolean; error?: string }> {
+    try {
+      const app = getApps()[0];
+      if (!app) {
+        throw new Error('Firebase app not initialized');
+      }
+
+      const auth = getAuth(app);
+      const currentUser = auth.currentUser;
+      console.log('🔐 PWA - Current user before auth check:', currentUser ? 'User exists' : 'No user');
+
+      if (!currentUser) {
+        console.log('🔐 PWA - No authenticated user, signing in anonymously...');
+        const userCredential = await signInAnonymously(auth);
+        console.log('🔐 PWA - Anonymous authentication successful:', userCredential.user.uid);
+        console.log('🔐 PWA - User is anonymous:', userCredential.user.isAnonymous);
+      } else {
+        console.log('🔐 PWA - User already authenticated:', currentUser.uid);
+        console.log('🔐 PWA - User is anonymous:', currentUser.isAnonymous);
+      }
+
+      // Double-check authentication worked
+      const finalUser = auth.currentUser;
+      if (!finalUser) {
+        throw new Error('Authentication completed but no user found');
+      }
+
+      console.log('🔐 PWA - Final auth check - User ID:', finalUser.uid);
+      return { success: true };
+    } catch (error) {
+      console.error('🔐 Authentication failed:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Authentication failed' };
+    }
+  }
+
+  /**
+   * Ensure user is authenticated (for backward compatibility)
+   * @deprecated Use initializeAuthentication() explicitly in PWA App.tsx instead
+   */
+  static async ensureAuthenticated(): Promise<{ success: boolean; error?: string }> {
+    console.warn('🔐 ensureAuthenticated() is deprecated. Use initializeAuthentication() explicitly in PWA App.tsx');
+    return this.initializeAuthentication();
+  }
   /**
    * Test Firebase connection by attempting to read from Firestore
    */
