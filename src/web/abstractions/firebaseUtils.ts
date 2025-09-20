@@ -5,7 +5,7 @@
  */
 
 import { getApp } from 'firebase/app';
-import { GameUtils } from '@common/gameCore/gameUtils';
+import { GameUtils } from '@common/utils/gameUtils';
 import { GameState } from '@common/types/gameState';
 
 // Initialize GameUtils with the Firebase app instance

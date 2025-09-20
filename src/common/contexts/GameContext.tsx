@@ -115,16 +115,16 @@ export function GameProvider({ children }: { children: ReactNode }) {
       dispatch({ type: 'SET_LOADING', payload: true });
       dispatch({ type: 'SET_ERROR', payload: null });
 
-      const result = await FirebaseUtils.createNewGame(gameId);
+      const result = await FirebaseUtils.createGameSession(gameId);
 
-      if (result.success && result.gameId && result.sessionUuid) {
+      if (result.success && result.gameId && result.uuid) {
         dispatch({
           type: 'SET_CURRENT_SESSION',
-          payload: { gameId: result.gameId, sessionUuid: result.sessionUuid },
+          payload: { gameId: result.gameId, sessionUuid: result.uuid },
         });
 
         // Save to local storage
-        await GameStorageService.saveGame(result.gameId, result.sessionUuid);
+        await GameStorageService.saveGame(result.gameId, result.uuid);
 
         return { success: true };
       } else {
@@ -153,17 +153,21 @@ export function GameProvider({ children }: { children: ReactNode }) {
         firebaseCleanupRef.current = null;
       }
 
-      // Connect to Firebase
-      const result = await FirebaseUtils.connectToGame(gameId);
+      // Connect to Firebase by getting the game state
+      const result = await FirebaseUtils.getGameStateByGameId(gameId);
 
-      if (result.success && result.sessionUuid) {
+      if (result.success && result.data) {
+        const sessionUuid = FirebaseUtils.gameIdToUuid(gameId);
         dispatch({
           type: 'SET_CURRENT_SESSION',
-          payload: { gameId, sessionUuid: result.sessionUuid },
+          payload: { gameId, sessionUuid },
         });
 
+        // Set the initial game state
+        dispatch({ type: 'SET_GAME_STATE', payload: result.data });
+
         // Set up real-time listener
-        firebaseCleanupRef.current = FirebaseUtils.subscribeToGameState(gameId, (gameState) => {
+        firebaseCleanupRef.current = FirebaseUtils.subscribeToGameStateByGameId(gameId, (gameState) => {
           if (gameState) {
             dispatch({ type: 'SET_GAME_STATE', payload: gameState });
             
@@ -195,7 +199,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const result = await FirebaseUtils.updateGameState(state.currentGameId, updates);
+      const result = await FirebaseUtils.updateGameStateByGameId(state.currentGameId, updates);
       
       if (result.success) {
         dispatch({ type: 'UPDATE_LAST_UPDATE_TIME' });
