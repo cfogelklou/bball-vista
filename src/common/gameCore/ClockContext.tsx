@@ -1,14 +1,15 @@
 /**
- * @file ClockContext.tsx
+ * @file ClockContext.tsx - Unified Clock Context
  * @description This file provides a React context for managing and displaying local clock timers
  * that are synchronized with the master game state from Firebase. This allows for a smooth
  * countdown on the UI while Firebase remains the single source of truth.
+ * This unified version works for both mobile apps and receiver apps.
  */
 
 import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { startLocalClock, stopLocalClock, getElapsedTime } from './clockUtils';
-import { useGame } from '../../../../mySrc/contexts/GameContext';
-import { GameState } from '../types/gameState';
+import { useGame } from '@common/contexts/GameContext';
+import { GameState } from '@common/types/gameState';
 import clockSynchronizer from './clockSync';
 
 /**
@@ -133,7 +134,7 @@ export function ClockProvider({ children }: { children: ReactNode }) {
    * NOTE: This function is for control apps only, not receiver apps
    */
   const handleStopClock = (clockId: 'periodClock' | 'shotClock') => {
-    if (!currentGame) return;
+    if (!currentGame || !updateGameState) return;
 
     const clock = clockId === 'periodClock' ? currentGame.periodClock : currentGame.shotClock;
     if (clock.timestampUtcStarted === 0) return; // Clock is not running
