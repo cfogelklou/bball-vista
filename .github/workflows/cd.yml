@@ -56,6 +56,10 @@ jobs:
         npm ci
         npm run lint
 
+    - name: test
+      run: |
+        npm run test
+
     - name: build
       run: |
         npm run build
