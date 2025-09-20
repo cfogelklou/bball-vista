@@ -24,12 +24,13 @@ export function startLocalClock(
   const intervalId = setInterval(() => {
     const elapsedTime = getElapsedTime(timestampUtcStarted);
     const displayTime = Math.max(0, remainingTime - elapsedTime);
+    console.log(`⏱️ [${clockId}] Timer tick: ${displayTime}ms remaining`);
     onTick(displayTime);
 
     if (displayTime === 0) {
       stopLocalClock(clockId);
     }
-  }, 100);
+  }, 333);
 
   timers[clockId] = intervalId as any;
 }
@@ -39,6 +40,7 @@ export function startLocalClock(
  * @param clockId - The ID of the clock to stop.
  */
 export function stopLocalClock(clockId: string): void {
+  console.log(`⏱️ [${clockId}] Stopping local clock`);
   if (timers[clockId]) {
     clearInterval(timers[clockId]);
     delete timers[clockId];

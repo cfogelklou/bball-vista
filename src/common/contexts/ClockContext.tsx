@@ -4,7 +4,7 @@
  * control apps (with useGame) and receiver apps (with direct gameState props)
  */
 
-import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, ReactNode, useCallback, useMemo } from 'react';
 import { startLocalClock, stopLocalClock, getElapsedTime } from '@common/gameCore/clockUtils';
 import { GameState } from '@common/types/gameState';
 import clockSynchronizer from '@common/gameCore/clockSync';
@@ -95,6 +95,7 @@ export function BaseClockProvider({
       }
       // If already running, don't restart timer (avoid interrupting smooth countdown)
     } else {
+      console.log('🕐 PERIOD CLOCK STOP shotClock.timestampUtcStarted == 0 (1)');
       stopLocalClock('gameClock');
       setGameClockTime(periodClock.msRemaining);
     }
@@ -126,6 +127,7 @@ export function BaseClockProvider({
       }
       // If already running, don't restart timer (avoid interrupting smooth countdown)
     } else {
+      console.log('🕐 PERIOD CLOCK STOP shotClock.timestampUtcStarted == 0 (2)');
       stopLocalClock('shotClock');
       setShotClockTime(shotClock.msRemaining);
     }
@@ -133,15 +135,22 @@ export function BaseClockProvider({
     // Update previous state reference for next comparison
     previousGameStateRef.current = gameState;
 
+    // Only cleanup on unmount or when clocks should actually be stopped
     return () => {
-      stopLocalClock('gameClock');
-      stopLocalClock('shotClock');
+      if (!gameState || gameState.periodClock.timestampUtcStarted === 0) {
+        console.log('🕐 PERIOD CLOCK STOP during BaseClockProvider unmounting (period stopped)');
+        stopLocalClock('gameClock');
+      }
+      if (!gameState || gameState.shotClock.timestampUtcStarted === 0) {
+        console.log('🕐 SHOT CLOCK STOP during BaseClockProvider unmounting (shot stopped)');
+        stopLocalClock('shotClock');
+      }
     };
-  }, [gameState, useReceiverLogic]);
+  }, [gameState, useReceiverLogic, currentDeviceId]);
 
-  const getDisplayTime = (clockId: 'periodClock' | 'shotClock') => {
+  const getDisplayTime = useCallback((clockId: 'periodClock' | 'shotClock') => {
     return clockId === 'periodClock' ? gameClockTime : shotClockTime;
-  };
+  }, [gameClockTime, shotClockTime]);
 
   const handleStopClock = updateGameState ? (clockId: 'periodClock' | 'shotClock') => {
     if (!gameState || !updateGameState) return;
@@ -166,15 +175,15 @@ export function BaseClockProvider({
     updateGameState(updates);
   } : undefined;
 
-  const getSyncStats = () => {
+  const getSyncStats = useCallback(() => {
     return clockSynchronizer.getSyncStats();
-  };
+  }, []);
 
-  const value: ClockContextState = {
+  const value: ClockContextState = useMemo(() => ({
     getDisplayTime,
     getSyncStats,
     ...(handleStopClock && { handleStopClock }),
-  };
+  }), [getDisplayTime, getSyncStats, handleStopClock]);
 
   return <ClockContext.Provider value={value}>{children}</ClockContext.Provider>;
 }
