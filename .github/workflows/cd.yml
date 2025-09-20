@@ -51,9 +51,13 @@ jobs:
         cd secrets
         ./extract_secrets.sh ${{ secrets.CREDENTIALS_AND_ID_PUB }}
 
-    - name: install and build
+    - name: install and lint
       run: |
         npm ci
+        npm run lint
+
+    - name: build
+      run: |
         npm run build
 
     - name: Upload
