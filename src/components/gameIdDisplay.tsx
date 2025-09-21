@@ -8,11 +8,11 @@ export type GameIdDisplayProps = {
 
 export const GameIdDisplay: React.FC<GameIdDisplayProps> = ({ gameId, sessionUuid }) => {
   // Don't show in production
-  const isProduction = process.env.NODE_ENV === 'production';
-
-  if (isProduction) {
-    return null;
-  }
+  // const isProduction = process.env.NODE_ENV === 'production';
+  //
+  // if (isProduction) {
+  //   return null;
+  // }
 
   // Prefer gameId if available, otherwise show first 8 chars of UUID
   const displayId = gameId || (sessionUuid ? sessionUuid.substring(0, 8) : null);
