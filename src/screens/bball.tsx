@@ -92,16 +92,26 @@ function BballReceiver() {
     const currentReceiver = castReceiver.current;
 
     // Initialize Cast receiver with game state change callback
-    currentReceiver.initialize(handleGameStateChange);
+    const initializeReceiver = async () => {
+      try {
+        console.log('🎯 Initializing Cast receiver...');
+        await currentReceiver.initialize(handleGameStateChange);
+        console.log('🎯 Cast receiver initialized successfully');
+        
+        // Update game ID and session UUID after successful initialization
+        setGameId(currentReceiver.getGameId() || '');
+        setSessionUuid(currentReceiver.getSessionUuid() || '');
+      } catch (error) {
+        console.error('🎯 ❌ Failed to initialize Cast receiver:', error);
+      }
+    };
+
+    initializeReceiver();
 
     // Set up interval to check for sound triggers
     const interval = setInterval(() => {
       checkForSoundTriggers();
     }, 100);
-
-    // Update game ID and session UUID
-    setGameId(currentReceiver.getGameId() || '');
-    setSessionUuid(currentReceiver.getSessionUuid() || '');
 
     return () => {
       clearInterval(interval);
