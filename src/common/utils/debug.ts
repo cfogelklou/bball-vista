@@ -7,7 +7,7 @@
 import { isWeb } from '@abstractions/isWeb';
 import { StorageUtils } from '@abstractions/storage';
 
-export const wantDebug = true; // Set to false to disable all debug code in production builds
+export const wantDebug = false; // Set to false to disable all debug code in production builds
 
 /**
  * Auto-detect if we're in debug mode based on multiple criteria
