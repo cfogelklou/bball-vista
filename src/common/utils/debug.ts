@@ -74,10 +74,20 @@ class DebugLogger {
   constructor() {
     if (wantDebug) {
       this.initializeFromEnv();
-      this.initializeFromStorage(); // Async storage initialization
+      // Async storage initialization moved to static create() method
     }
   }
 
+  /**
+   * Factory method to create and initialize a DebugLogger instance asynchronously.
+   */
+  static async create(): Promise<DebugLogger> {
+    const logger = new DebugLogger();
+    if (wantDebug) {
+      await logger.initializeFromStorage();
+    }
+    return logger;
+  }
   private initializeFromEnv() {
     if (!wantDebug) return; // Skip initialization if debugging is disabled globally
 
