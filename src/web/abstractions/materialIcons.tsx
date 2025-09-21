@@ -42,10 +42,8 @@ export function MaterialIcons({ name, size = 24, color = '#000', style, ...props
         IconComponent = (MdIcons as any)[fallbackName];
 
         if (!IconComponent) {
-            // If still no icon found, return a default share icon for share, otherwise null
-            if (name === 'share') {
-                IconComponent = (MdIcons as any)['MdShare'];
-            }
+            // If still no icon found, use a generic fallback icon (e.g., MdHelpOutline)
+            IconComponent = (MdIcons as any)['MdHelpOutline'];
             if (!IconComponent) {
                 return null;
             }
