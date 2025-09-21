@@ -13,3 +13,15 @@ export type {
   ClockState,
   GameState
 } from '@common/types/gameState';
+
+// Debug utilities
+export {
+  isDebugMode,
+  isDebugFeatureEnabled,
+  DebugFeatures,
+  createDebugLogger,
+  enableDebug,
+  disableDebug,
+  type DebugFeature,
+  type LogLevel
+} from './utils/debug';
