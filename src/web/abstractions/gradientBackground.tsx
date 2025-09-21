@@ -25,3 +25,6 @@ export function GradientBackground({ children, style }: GradientBackgroundProps)
     </View>
   );
 }
+
+// Export as default for compatibility
+export default GradientBackground;
