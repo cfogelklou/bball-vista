@@ -2,27 +2,30 @@ import React from 'react';
 import { View, ViewStyle } from 'react-native';
 
 interface GradientBackgroundProps {
-  children: React.ReactNode;
   style?: ViewStyle;
 }
 
 /**
  * GradientBackground component for web using CSS gradient.
- * Creates the BallerCast gradient from dark blue to dark orange.
+ * Creates a full-screen BallerCast gradient that sits behind other content.
+ * Use this as a separate component on screens that need the gradient background.
  */
-export function GradientBackground({ children, style }: GradientBackgroundProps) {
+export function GradientBackground({ style }: GradientBackgroundProps) {
   return (
     <View
       style={[
         {
-          flex: 1,
-          backgroundImage: 'linear-gradient(to bottom, #1C1D2E, #4A2F1A)',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: -1,
+          background: 'linear-gradient(to bottom, #1C1D2E 0%, #E5691A 100%)',
         } as any, // Cast to any for web-specific CSS properties
-        style
+        style,
       ]}
-    >
-      {children}
-    </View>
+    />
   );
 }
 
