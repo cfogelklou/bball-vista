@@ -5,6 +5,7 @@
   "private": true,
   "homepage": "https://applicaudia.se/ballercast-rx",
   "dependencies": {
+    "@expo/vector-icons": "^15.0.2",
     "@types/react-router-dom": "^5.3.3",
     "caniuse-lite": "^1.0.30001741",
     "deep-equal": "^2.2.3",

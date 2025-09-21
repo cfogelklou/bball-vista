@@ -219,6 +219,15 @@ export const createDebugLogger = (module: string) => debug.createLogger(module);
 export const enableDebug = (modules?: string | string[]) => debug.enable(modules);
 export const disableDebug = () => debug.disable();
 
+/**
+ * Helper function to reload the window if possible (web only)
+ */
+function reloadWindowIfPossible() {
+  if (typeof window !== 'undefined' && window.location?.reload) {
+    window.location.reload();
+  }
+}
+
 // Export for browser console access (web only)
 if (isWeb() && typeof window !== 'undefined' && wantDebug) {
   (window as any).ballercastDebug = {
@@ -228,15 +237,11 @@ if (isWeb() && typeof window !== 'undefined' && wantDebug) {
     isDebugMode: () => debugEnabled,
     enablePersistent: async () => {
       await StorageUtils.setItem('ballercast-debug', 'true');
-      if (typeof window !== 'undefined' && window.location?.reload) {
-        window.location.reload();
-      }
+      reloadWindowIfPossible();
     },
     disablePersistent: async () => {
       await StorageUtils.removeItem('ballercast-debug');
-      if (typeof window !== 'undefined' && window.location?.reload) {
-        window.location.reload();
-      }
+      reloadWindowIfPossible();
     },
     setFeatures: async (features: string) => {
       await StorageUtils.setItem('ballercast-debug-features', features);
