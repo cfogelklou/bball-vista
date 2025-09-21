@@ -8,6 +8,7 @@ on:
       - 'main'
       - 'master'
       - 'ballercast'
+      - 'dbgcast'
     tags:
       - '*' # Test all pushed tags
 
@@ -46,7 +47,6 @@ jobs:
         node-version: "20"
 
     - name: Extract secrets
-      if: github.ref == 'refs/heads/ballercast' || (github.event_name == 'pull_request' && github.base_ref == 'ballercast')
       run: |
         cd secrets
         ./extract_secrets.sh ${{ secrets.CREDENTIALS_AND_ID_PUB }}
@@ -65,7 +65,7 @@ jobs:
         npm run build
 
     - name: Upload
-      if: github.event_name == 'push' && (github.ref == 'refs/heads/ballercast' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
+      if: github.event_name == 'push' && (github.ref == 'refs/heads/ballercast' || github.ref == 'refs/heads/dbgcast' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
       run: |
         echo "$ID_RSA_PRIV" > id_rsa_sftp
         echo "$ID_RSA_PUB" > id_rsa_sftp.pub

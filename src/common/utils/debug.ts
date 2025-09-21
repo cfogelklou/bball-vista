@@ -2,12 +2,157 @@
  * Debug Utility - Conditional logging for development and debugging
  * Allows enabling/disabling debug logs via environment variables or runtime config
  * Cross-platform compatible with web, iOS, and Android
+ * Enhanced with error capture for overlay display
  */
 
 import { isWeb } from '@abstractions/isWeb';
 import { StorageUtils } from '@abstractions/storage';
 
-export const wantDebug = false; // Set to false to disable all debug code in production builds
+export const wantDebug = true; // Set to false to disable all debug code in production builds
+
+// Error capture interface for overlay integration
+export interface CapturedError {
+  id: string;
+  message: string;
+  timestamp: Date;
+  level: 'debug' | 'info' | 'warn' | 'error';
+  source?: string;
+  stack?: string;
+}
+
+// Global error capture system
+class ErrorCapture {
+  private errors: CapturedError[] = [];
+  private maxErrors = 100;
+  private errorIdCounter = 0;
+  private listeners: Array<(error: CapturedError) => void> = [];
+  private originalConsole: {
+    log: typeof console.log;
+    info: typeof console.info;
+    warn: typeof console.warn;
+    error: typeof console.error;
+    debug: typeof console.debug;
+  };
+
+  constructor() {
+    // Store original console methods
+    this.originalConsole = {
+      log: console.log.bind(console),
+      info: console.info.bind(console),
+      warn: console.warn.bind(console),
+      error: console.error.bind(console),
+      debug: console.debug.bind(console),
+    };
+
+    // Only intercept console in debug mode
+    if (wantDebug) {
+      this.interceptConsole();
+    }
+  }
+
+  private interceptConsole() {
+    // Intercept console.error
+    console.error = (...args: any[]) => {
+      this.originalConsole.error(...args);
+      this.captureError('error', this.formatArgs(args));
+    };
+
+    // Intercept console.warn
+    console.warn = (...args: any[]) => {
+      this.originalConsole.warn(...args);
+      this.captureError('warn', this.formatArgs(args));
+    };
+
+    // Intercept console.info for debug purposes
+    console.info = (...args: any[]) => {
+      this.originalConsole.info(...args);
+      if (debugEnabled) {
+        this.captureError('info', this.formatArgs(args));
+      }
+    };
+
+    // Intercept console.debug
+    console.debug = (...args: any[]) => {
+      this.originalConsole.debug(...args);
+      if (debugEnabled) {
+        this.captureError('debug', this.formatArgs(args));
+      }
+    };
+  }
+
+  private formatArgs(args: any[]): string {
+    return args.map(arg => {
+      if (typeof arg === 'string') return arg;
+      if (typeof arg === 'number' || typeof arg === 'boolean') return String(arg);
+      if (arg instanceof Error) return `${arg.message}\n${arg.stack}`;
+      try {
+        return JSON.stringify(arg, null, 2);
+      } catch {
+        return String(arg);
+      }
+    }).join(' ');
+  }
+
+  private captureError(level: CapturedError['level'], message: string, source?: string) {
+    const error: CapturedError = {
+      id: `error-${++this.errorIdCounter}-${Date.now()}`,
+      message,
+      timestamp: new Date(),
+      level,
+      source,
+      stack: level === 'error' ? new Error().stack : undefined,
+    };
+
+    this.errors.push(error);
+    
+    // Keep only the most recent errors
+    if (this.errors.length > this.maxErrors) {
+      this.errors = this.errors.slice(-this.maxErrors);
+    }
+
+    // Notify listeners
+    this.listeners.forEach(listener => {
+      try {
+        listener(error);
+      } catch (e) {
+        // Don't let listener errors break the capture system
+        this.originalConsole.error('Error in error capture listener:', e);
+      }
+    });
+  }
+
+  public addError(message: string, level: CapturedError['level'] = 'error', source?: string) {
+    this.captureError(level, message, source);
+  }
+
+  public getErrors(): CapturedError[] {
+    return [...this.errors];
+  }
+
+  public clearErrors() {
+    this.errors = [];
+  }
+
+  public addListener(listener: (error: CapturedError) => void) {
+    this.listeners.push(listener);
+    return () => {
+      const index = this.listeners.indexOf(listener);
+      if (index >= 0) {
+        this.listeners.splice(index, 1);
+      }
+    };
+  }
+
+  public setMaxErrors(max: number) {
+    this.maxErrors = max;
+    if (this.errors.length > max) {
+      this.errors = this.errors.slice(-max);
+    }
+  }
+}
+
+// Global error capture instance
+export const errorCapture = new ErrorCapture();
 
 /**
  * Auto-detect if we're in debug mode based on multiple criteria
@@ -249,7 +394,36 @@ if (isWeb() && typeof window !== 'undefined' && wantDebug) {
     getFeatures: async () => {
       return await StorageUtils.getItem('ballercast-debug-features');
     },
+    // Error testing utilities
+    testErrors: {
+      error: () => console.error('Test error message for overlay'),
+      warning: () => console.warn('Test warning message for overlay'),
+      info: () => console.info('Test info message for overlay'),
+      firebase: () => errorCapture.addError('Firebase connection failed: Test error', 'error', 'Firebase'),
+      chromecast: () => errorCapture.addError('Chromecast initialization failed: Test error', 'error', 'CastReceiver'),
+      multiple: () => {
+        errorCapture.addError('First test error', 'error', 'Test');
+        errorCapture.addError('Second test warning', 'warn', 'Test');
+        errorCapture.addError('Third test info', 'info', 'Test');
+      }
+    },
+    errors: {
+      get: () => errorCapture.getErrors(),
+      clear: () => errorCapture.clearErrors(),
+    }
   };
+
+  // Add keyboard shortcuts for testing (Ctrl+Shift+E for error overlay toggle)
+  document.addEventListener('keydown', (event) => {
+    if (event.ctrlKey && event.shiftKey && event.key === 'E') {
+      event.preventDefault();
+      errorCapture.addError('Keyboard shortcut test error', 'error', 'Debug');
+    }
+    if (event.ctrlKey && event.shiftKey && event.key === 'W') {
+      event.preventDefault();
+      errorCapture.addError('Keyboard shortcut test warning', 'warn', 'Debug');
+    }
+  });
 }
 
 /**
@@ -354,4 +528,65 @@ export const DebugStorage = {
     await StorageUtils.removeItem('ballercast-debug-modules');
     await StorageUtils.removeItem('ballercast-debug-level');
   },
+};
+
+/**
+ * Error capture integration functions
+ */
+export const ErrorCaptureAPI = {
+  /**
+   * Get all captured errors
+   */
+  getErrors: () => errorCapture.getErrors(),
+
+  /**
+   * Clear all captured errors
+   */
+  clearErrors: () => errorCapture.clearErrors(),
+
+  /**
+   * Add a listener for new errors
+   */
+  addListener: (listener: (error: CapturedError) => void) => errorCapture.addListener(listener),
+
+  /**
+   * Manually add an error to the capture system
+   */
+  addError: (message: string, level: CapturedError['level'] = 'error', source?: string) => 
+    errorCapture.addError(message, level, source),
+
+  /**
+   * Set maximum number of errors to keep
+   */
+  setMaxErrors: (max: number) => errorCapture.setMaxErrors(max),
+};
+
+/**
+ * Enhanced debug logger that integrates with error capture
+ */
+export const createEnhancedDebugLogger = (module: string) => {
+  const logger = debug.createLogger(module);
+  
+  return {
+    debug: (...args: any[]) => {
+      logger.debug(...args);
+      if (debugEnabled) {
+        errorCapture.addError(args.join(' '), 'debug', module);
+      }
+    },
+    info: (...args: any[]) => {
+      logger.info(...args);
+      if (debugEnabled) {
+        errorCapture.addError(args.join(' '), 'info', module);
+      }
+    },
+    warn: (...args: any[]) => {
+      logger.warn(...args);
+      errorCapture.addError(args.join(' '), 'warn', module);
+    },
+    error: (...args: any[]) => {
+      logger.error(...args);
+      errorCapture.addError(args.join(' '), 'error', module);
+    },
+  };
 };

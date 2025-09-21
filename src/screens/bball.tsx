@@ -3,8 +3,11 @@ import { View, StyleSheet, Dimensions } from 'react-native';
 import { Themes } from '../themes/themes';
 import { Scoreboard } from '../components/scoreboard';
 import { GameIdDisplay } from '../components/gameIdDisplay';
+import { ErrorOverlay } from '../components/ErrorOverlay';
 import { GameState, createDefaultGameState, getCurrentClockTime } from '@common/types/gameState';
 import { ReceiverClockProvider } from '../common/gameCore/ReceiverClockContext';
+import { ErrorManagerProvider, useErrorManager } from '../common/contexts/ErrorManagerContext';
+import { ErrorCaptureIntegration } from '../common/components/ErrorCaptureIntegration';
 import deepEqual from 'deep-equal';
 import { Howl, Howler } from 'howler';
 import CastReceiver from '../cast/receiver';
@@ -50,6 +53,9 @@ function BballReceiver() {
   const [gameId, setGameId] = useState<string>('');
   const [sessionUuid, setSessionUuid] = useState<string>('');
   const previousGameState = useRef<GameState>(createDefaultGameState('temp-session'));
+  
+  // Error management hooks
+  const { errors, isOverlayVisible, hideOverlay } = useErrorManager();
 
   const setGameStateIfChanged = useCallback((newGamestate: GameState) => {
     if (!deepEqual(newGamestate, gameState)) {
@@ -103,6 +109,7 @@ function BballReceiver() {
         setSessionUuid(currentReceiver.getSessionUuid() || '');
       } catch (error) {
         console.error('🎯 ❌ Failed to initialize Cast receiver:', error);
+        // The error will be captured by the enhanced debug logger and shown in the overlay
       }
     };
 
@@ -110,12 +117,20 @@ function BballReceiver() {
 
     // Set up interval to check for sound triggers
     const interval = setInterval(() => {
-      checkForSoundTriggers();
+      try {
+        checkForSoundTriggers();
+      } catch (error) {
+        console.error('Error in sound trigger check:', error);
+      }
     }, 100);
 
     return () => {
       clearInterval(interval);
-      currentReceiver.disconnect();
+      try {
+        currentReceiver.disconnect();
+      } catch (error) {
+        console.error('Error disconnecting Cast receiver:', error);
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -123,8 +138,12 @@ function BballReceiver() {
   // Update game ID and session UUID when they change
   useEffect(() => {
     const updateIds = () => {
-      setGameId(castReceiver.current.getGameId() || '');
-      setSessionUuid(castReceiver.current.getSessionUuid() || '');
+      try {
+        setGameId(castReceiver.current.getGameId() || '');
+        setSessionUuid(castReceiver.current.getSessionUuid() || '');
+      } catch (error) {
+        console.error('Error updating game IDs:', error);
+      }
     };
 
     const interval = setInterval(updateIds, 1000);
@@ -136,6 +155,7 @@ function BballReceiver() {
   return (
     <ReceiverClockProvider gameState={gameState}>
       <View style={[styles.container, { width: dim.width, height: dim.height }]}>
+        <ErrorCaptureIntegration />
         <Scoreboard
           width={dim.width}
           height={dim.height}
@@ -145,6 +165,12 @@ function BballReceiver() {
           gameId={gameId}
           sessionUuid={sessionUuid}
         />
+        <ErrorOverlay
+          errors={errors}
+          visible={isOverlayVisible}
+          onDismiss={hideOverlay}
+          maxErrors={15}
+        />
       </View>
     </ReceiverClockProvider>
   );
@@ -152,7 +178,15 @@ function BballReceiver() {
 
 // Main component
 export function Bball(_props: BballProps) {
-  return <BballReceiver />;
+  return (
+    <ErrorManagerProvider
+      maxErrors={100}
+      autoShowOnError={true}
+      autoHideDelay={15000}
+    >
+      <BballReceiver />
+    </ErrorManagerProvider>
+  );
 }
 
 const debugBorders = {
