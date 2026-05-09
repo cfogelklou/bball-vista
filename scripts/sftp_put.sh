@@ -1,1 +1,1 @@
-sftp -o IdentityFile="./id_rsa_sftp" -o "StrictHostKeyChecking=no" -b ./scripts/batchfile_sftp.txt applicaudia.se@ssh.applicaudia.se
+sftp -o IdentityFile="./id_rsa_sftp" -o "StrictHostKeyChecking=no" -b ./scripts/batchfile_sftp.txt cfg90a6nm_ssh@ssh.cfg90a6nm.service.one
